@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../Models/Note.dart';
@@ -8,8 +9,8 @@ import '../Views/StaggeredTiles.dart';
 import 'HomePage.dart';
 
 class StaggeredGridPage extends StatefulWidget {
-  final notesViewType;
-  const StaggeredGridPage({Key? key, this.notesViewType}) : super(key: key);
+  final viewType notesViewType;
+  const StaggeredGridPage({Key? key, required this.notesViewType}) : super(key: key);
   @override
   _StaggeredGridPageState createState() => _StaggeredGridPageState();
 }
@@ -23,13 +24,13 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 @override
   void initState() {
     super.initState();
-    this.notesViewType = widget.notesViewType;
+    notesViewType = widget.notesViewType;
   }
 
 
 @override void setState(fn) {
     super.setState(fn);
-    this.notesViewType = widget.notesViewType;
+    notesViewType = widget.notesViewType;
   }
 
   @override
@@ -38,30 +39,32 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 
     GlobalKey _stagKey = GlobalKey();
 
-    print("update needed?: ${CentralStation.updateNeeded}");
+    if (kDebugMode) {
+      print("update needed?: ${CentralStation.updateNeeded}");
+    }
     if(CentralStation.updateNeeded) {  retrieveAllNotesFromDatabase();  }
-    return Container(child: Padding(padding:  _paddingForView(context) , child:
-      new StaggeredGridView.count(key: _stagKey,
+    return Padding(padding:  _paddingForView(context) , child:
+      StaggeredGridView.count(key: _stagKey,
         crossAxisSpacing: 6,
         mainAxisSpacing: 6,
         crossAxisCount: _colForStaggeredView(context),
         children: List.generate(_allNotesInQueryResult.length, (i){ return _tileGenerator(i); }),
       staggeredTiles: _tilesForView() ,
           ),
-      )
       );
   }
 
   int _colForStaggeredView(BuildContext context) {
 
-      if (widget.notesViewType == viewType.List)
-      return 1;
+      if (widget.notesViewType == viewType.List) {
+        return 1;
+      }
       // for width larger than 600 on grid mode, return 3 irrelevant of the orientation to accommodate more notes horizontally
       return MediaQuery.of(context).size.width > 600 ? 3:2  ;
   }
 
  List<StaggeredTile> _tilesForView() { // Generate staggered tiles for the view based on the current preference.
-  return List.generate(_allNotesInQueryResult.length,(index){ return StaggeredTile.fit(1); }
+  return List.generate(_allNotesInQueryResult.length,(index){ return const StaggeredTile.fit(1); }
   ) ;
 }
 
@@ -96,7 +99,7 @@ EdgeInsets _paddingForView(BuildContext context){
     var _testData = noteDB.selectAllNotes();
     _testData.then((value){
         setState(() {
-          this._allNotesInQueryResult = value!;
+          _allNotesInQueryResult = value!;
           CentralStation.updateNeeded = false;
         });
     });

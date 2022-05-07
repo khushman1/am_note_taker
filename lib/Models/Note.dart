@@ -25,7 +25,7 @@ class Note {
       'is_archived': isArchived  //  for later use for integrating archiving
     };
     if(forUpdate){
-      data["id"] = this.id;
+      data["id"] = id;
     }
     return data;
   }

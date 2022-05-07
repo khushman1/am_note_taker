@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'StaggeredView.dart';
@@ -12,13 +13,15 @@ enum viewType {
 
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
 
-  var notesViewType ;
+  late viewType notesViewType;
   @override void initState() {
     notesViewType = viewType.Staggered;
     super.initState();
@@ -30,12 +33,12 @@ class _HomePageState extends State<HomePage> {
     return
        Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(systemOverlayStyle: SystemUiOverlayStyle.light,
+      appBar: AppBar(systemOverlayStyle: SystemUiOverlayStyle.dark,
         actions: _appBarActions(),
         elevation: 1,
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text("Notes"),
+        title: const Text("Notes"),
       ),
       body: SafeArea(child:   _body(), right: true, left:  true, top: true, bottom: true,),
       bottomSheet: _bottomBar(),
@@ -44,8 +47,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _body() {
-    print(notesViewType);
-    return Container(child: StaggeredGridPage(notesViewType: notesViewType,));
+    if (kDebugMode) {
+      print(notesViewType);
+    }
+    return StaggeredGridPage(notesViewType: notesViewType,);
   }
 
   Widget _bottomBar() {
@@ -53,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         TextButton(
-          child: Text(
+          child: const Text(
             "New Note\n",
             style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
           ),
@@ -66,7 +71,7 @@ class _HomePageState extends State<HomePage> {
 
   void _newNoteTapped(BuildContext ctx) {
     // "-1" id indicates the note is not new
-    var emptyNote = new Note(-1, "", "", DateTime.now(), DateTime.now(), Colors.white);
+    var emptyNote = Note(-1, "", "", DateTime.now(), DateTime.now(), Colors.white);
     Navigator.push(ctx,MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
   }
 
@@ -88,7 +93,7 @@ List<Widget> _appBarActions() {
 
     return [
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
           child: GestureDetector(
             onTap: () => _toggleViewType() ,

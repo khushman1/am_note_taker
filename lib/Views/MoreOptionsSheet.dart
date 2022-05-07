@@ -7,7 +7,7 @@ enum moreOptions { delete, share, copy }
 
 class MoreOptionsSheet extends StatefulWidget {
   final Color? color;
-  final DateTime? date_last_edited;
+  final DateTime? dateLastEdited;
   final void Function(Color)? callBackColorTapped;
 
   final void Function(moreOptions)? callBackOptionTapped;
@@ -15,7 +15,7 @@ class MoreOptionsSheet extends StatefulWidget {
   const MoreOptionsSheet(
       {Key? key,
       this.color,
-      this.date_last_edited,
+      this.dateLastEdited,
       this.callBackColorTapped,
       this.callBackOptionTapped})
       : super(key: key);
@@ -36,31 +36,31 @@ class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
   Widget build(BuildContext context) {
     return Container(
       color: this.note_color,
-      child: new Wrap(
+      child: Wrap(
         children: <Widget>[
-          new ListTile(
-              leading: new Icon(Icons.delete),
-              title: new Text('Delete permanently'),
+          ListTile(
+              leading: const Icon(Icons.delete),
+              title: const Text('Delete permanently'),
               onTap: () {
                 Navigator.of(context).pop();
                 widget.callBackOptionTapped!(moreOptions.delete);
               }),
-          new ListTile(
-              leading: new Icon(Icons.content_copy),
-              title: new Text('Duplicate'),
+          ListTile(
+              leading: const Icon(Icons.content_copy),
+              title: const Text('Duplicate'),
               onTap: () {
                 Navigator.of(context).pop();
                 widget.callBackOptionTapped!(moreOptions.copy);
               }),
-          new ListTile(
-              leading: new Icon(Icons.share),
-              title: new Text('Share'),
+          ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share'),
               onTap: () {
                 Navigator.of(context).pop();
                 widget.callBackOptionTapped!(moreOptions.share);
               }),
-          new Padding(
-            padding: EdgeInsets.only(left: 10, right: 10),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
             child: SizedBox(
               height: 44,
               width: MediaQuery.of(context).size.width,
@@ -71,19 +71,19 @@ class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
               ),
             ),
           ),
-          new Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
                 height: 44,
                 child: Center(
                     child: Text(CentralStation.stringForDatetime(
-                        widget.date_last_edited!))),
+                        widget.dateLastEdited!))),
               )
             ],
             mainAxisAlignment: MainAxisAlignment.center,
           ),
-          new ListTile()
+          const ListTile()
         ],
       ),
     );
@@ -91,7 +91,7 @@ class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
 
   void _changeColor(Color color) {
     setState(() {
-      this.note_color = color;
+      note_color = color;
       widget.callBackColorTapped!(color);
     });
   }

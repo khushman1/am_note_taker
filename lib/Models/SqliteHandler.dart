@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
@@ -24,8 +25,9 @@ class NotesDBHandler {
 
 
   Future<Database?> get database async {
-    if (_database != null)
+    if (_database != null) {
       return _database;
+    }
 
     _database = await initDB();
     return _database;
@@ -38,7 +40,9 @@ class NotesDBHandler {
     // ignore: argument_type_not_assignable
     Database dbConnection = await openDatabase(
         dbPath, version: 1, onCreate: (Database db, int version) async {
-      print("executing create query from onCreate callback");
+      if (kDebugMode) {
+        print("executing create query from onCreate callback");
+      }
       await db.execute(_buildCreateQuery());
     });
 
@@ -54,7 +58,9 @@ class NotesDBHandler {
     query += tableName;
     query += "(";
     fieldMap.forEach((column, field){
-      print("$column : $field");
+      if (kDebugMode) {
+        print("$column : $field");
+      }
       query += "$column $field,";
     });
 
@@ -74,7 +80,9 @@ class NotesDBHandler {
   Future<int> insertNote(Note note, bool isNew) async {
     // Get a reference to the database
     final Database? db = await database;
-    print("insert called");
+    if (kDebugMode) {
+      print("insert called");
+    }
 
     // Insert the Notes into the correct table.
     await db?.insert('notes',
@@ -100,7 +108,9 @@ class NotesDBHandler {
     try {
       await db?.insert("notes",note.toMap(false), conflictAlgorithm: ConflictAlgorithm.replace);
     } catch(error) {
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       return false;
     }
     return true;
@@ -127,7 +137,9 @@ class NotesDBHandler {
         await db?.delete("notes",where: "id = ?",whereArgs: [note.id]);
         return true;
       } catch (error){
-        print("Error deleting ${note.id}: ${error.toString()}");
+        if (kDebugMode) {
+          print("Error deleting ${note.id}: ${error.toString()}");
+        }
         return false;
       }
     }

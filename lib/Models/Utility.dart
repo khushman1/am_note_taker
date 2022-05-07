@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 class CentralStation {
   static bool _updateNeeded = true;
 
-  static final fontColor = Color(0xff595959);
-  static final  borderColor = Color(0xffd3d3d3) ;
+  static const fontColor = Color(0xff595959);
+  static const  borderColor = Color(0xffd3d3d3) ;
 
   static bool get updateNeeded {
     if (_updateNeeded) {

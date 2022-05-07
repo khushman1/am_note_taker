@@ -6,7 +6,7 @@ import '../Models/Utility.dart';
 
 class MyStaggeredTile extends StatefulWidget {
   final Note note;
-  MyStaggeredTile(this.note);
+  const MyStaggeredTile(this.note);
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
 }
@@ -34,8 +34,8 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
       decoration: BoxDecoration(
         border: tileColor == Colors.white ?   Border.all(color: CentralStation.borderColor) : null,
           color: tileColor,
-          borderRadius: BorderRadius.all(Radius.circular(8))),
-      padding: EdgeInsets.all(8),
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
+      padding: const EdgeInsets.all(8),
       child:  constructChild(),) ,
     );
   }
@@ -49,16 +49,16 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
 
     List<Widget> contentsOfTiles = [];
 
-    if(widget.note.title.length != 0) {
+    if(widget.note.title.isNotEmpty) {
       contentsOfTiles.add(
         AutoSizeText(
           title,
           style: TextStyle(fontSize: _fontSize,fontWeight: FontWeight.bold),
-          maxLines: widget.note.title.length == 0 ? 1 : 3,
+          maxLines: widget.note.title.isEmpty ? 1 : 3,
           textScaleFactor: 1.5,
         ),
       );
-      contentsOfTiles.add(Divider(color: Colors.transparent,height: 6,),);
+      contentsOfTiles.add(const Divider(color: Colors.transparent,height: 6,),);
     }
 
     contentsOfTiles.add(
