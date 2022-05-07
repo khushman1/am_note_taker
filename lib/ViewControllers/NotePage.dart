@@ -247,7 +247,7 @@ class _NotePageState extends State<NotePage> {
     }
 
     if (!(_editableNote.title == _titleFromInitial &&
-            _editableNote.content == _contentFromInitial) ||
+        _editableNote.content == _contentFromInitial) ||
         (_isNewNote)) {
       // No changes to the note
       // Change last edit time only if the content of the note is mutated in compare to the note which the page was called with.

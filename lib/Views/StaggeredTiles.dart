@@ -47,8 +47,16 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
   void _noteTapped(BuildContext ctx) {
     CentralStation.updateNeeded = false;
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)));
+        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)))
+            .then((value) => _refreshIfNeeded());
   }
+
+  void _refreshIfNeeded()
+    {
+      if (CentralStation.updateNeeded) {
+        setState(() {});
+      }
+    }
 
   Widget constructChild() {
     List<Widget> contentsOfTiles = [];

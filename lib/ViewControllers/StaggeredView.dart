@@ -105,6 +105,10 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
   }
 
   void retrieveAllNotesFromDatabase() {
+    if (kDebugMode)
+      {
+        print("Retrieving all notes from db.");
+      }
     // queries for all the notes from the database ordered by latest edited note. excludes archived notes.
     var _testData = noteDB.selectAllNotes();
     _testData.then((value) {
