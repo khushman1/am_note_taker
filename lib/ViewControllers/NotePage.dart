@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../Models/Note.dart';
 import '../Models/SqliteHandler.dart';
 import 'dart:async';
 import '../Models/Utility.dart';
 import '../Views/MoreOptionsSheet.dart';
 import 'package:share/share.dart';
-import 'package:flutter/services.dart';
 
 class NotePage extends StatefulWidget {
   final Note noteInEditing;
@@ -18,33 +18,34 @@ class NotePage extends StatefulWidget {
 class _NotePageState extends State<NotePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  var note_color;
+  var noteColor;
   bool _isNewNote = false;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
 
-  String _titleFrominitial ;
-   String _contentFromInitial;
-   DateTime _lastEditedForUndo;
+  String _titleFromInitial = "";
+   String _contentFromInitial = "";
+   DateTime _lastEditedForUndo = DateTime.now();
 
 
 
   var _editableNote;
 
   // the timer variable responsible to call persistData function every 5 seconds and cancel the timer when the page pops.
-  Timer _persistenceTimer;
+  Timer? _persistenceTimer;
 
   final GlobalKey<ScaffoldState> _globalKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
+    super.initState();
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     _contentController.text = _editableNote.content;
-    note_color = _editableNote.note_color;
-    _lastEditedForUndo = widget.noteInEditing.date_last_edited;
+    noteColor = _editableNote.noteColour;
+    _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
 
-    _titleFrominitial = widget.noteInEditing.title;
+    _titleFromInitial = widget.noteInEditing.title;
     _contentFromInitial = widget.noteInEditing.content;
 
 
@@ -69,13 +70,13 @@ class _NotePageState extends State<NotePage> {
     return WillPopScope(
       child: Scaffold(
         key: _globalKey,
-        appBar: AppBar(brightness: Brightness.light,
+        appBar: AppBar(systemOverlayStyle: SystemUiOverlayStyle.light,
           leading: BackButton(
             color: Colors.black,
           ),
           actions: _archiveAction(context),
           elevation: 1,
-          backgroundColor: note_color,
+          backgroundColor: noteColor,
           title: _pageTitle(),
         ),
         body: _body(context),
@@ -88,7 +89,7 @@ class _NotePageState extends State<NotePage> {
     return
 
       Container(
-      color: note_color,
+      color: noteColor,
       padding: EdgeInsets.only(left: 16, right: 16, top: 12),
       child:
 
@@ -210,10 +211,10 @@ class _NotePageState extends State<NotePage> {
         context: context,
         builder: (BuildContext ctx) {
           return MoreOptionsSheet(
-            color: note_color,
+            color: noteColor,
             callBackColorTapped: _changeColor,
             callBackOptionTapped: bottomSheetOptionTappedHandler,
-            date_last_edited: _editableNote.date_last_edited,
+            date_last_edited: _editableNote.dateLastEdited,
           );
         });
   }
@@ -242,21 +243,21 @@ class _NotePageState extends State<NotePage> {
   void updateNoteObject() {
     _editableNote.content = _contentController.text;
     _editableNote.title = _titleController.text;
-    _editableNote.note_color = note_color;
+    _editableNote.noteColour = noteColor;
     print("new content: ${_editableNote.content}");
     print(widget.noteInEditing);
     print(_editableNote);
 
-    print("same title? ${_editableNote.title == _titleFrominitial}");
+    print("same title? ${_editableNote.title == _titleFromInitial}");
     print("same content? ${_editableNote.content == _contentFromInitial}");
 
 
-    if (!(_editableNote.title == _titleFrominitial &&
+    if (!(_editableNote.title == _titleFromInitial &&
             _editableNote.content == _contentFromInitial) ||
         (_isNewNote)) {
       // No changes to the note
       // Change last edit time only if the content of the note is mutated in compare to the note which the page was called with.
-      _editableNote.date_last_edited = DateTime.now();
+      _editableNote.dateLastEdited = DateTime.now();
       print("Updating date_last_edited");
       CentralStation.updateNeeded = true;
     }
@@ -288,7 +289,8 @@ class _NotePageState extends State<NotePage> {
     }
   }
 
-  void _deleteNote(BuildContext context) {
+  void _deleteNote(BuildContext? context) {
+    if (context == null) return;
     if (_editableNote.id != -1) {
       showDialog(
           context: context,
@@ -297,9 +299,9 @@ class _NotePageState extends State<NotePage> {
                 title: Text("Confirm ?"),
                 content: Text("This note will be deleted permanently"),
                 actions: <Widget>[
-                FlatButton(
+                TextButton(
                 onPressed: ()  {
-              _persistenceTimer.cancel();
+              _persistenceTimer?.cancel();
               var noteDB = NotesDBHandler();
               Navigator.of(context).pop();
               noteDB.deleteNote(_editableNote);
@@ -309,7 +311,7 @@ class _NotePageState extends State<NotePage> {
 
             },
             child: Text("Yes")),
-            FlatButton(
+            TextButton(
             onPressed: () => {Navigator.of(context).pop()},
             child: Text("No"))
             ],
@@ -321,8 +323,8 @@ class _NotePageState extends State<NotePage> {
   void _changeColor(Color newColorSelected) {
     print("note color changed");
     setState(() {
-      note_color = newColorSelected;
-      _editableNote.note_color = newColorSelected;
+      noteColor = newColorSelected;
+      _editableNote.noteColour = newColorSelected;
     });
     _persistColorChange();
     CentralStation.updateNeeded = true;
@@ -331,13 +333,13 @@ class _NotePageState extends State<NotePage> {
   void _persistColorChange() {
     if (_editableNote.id != -1) {
       var noteDB = NotesDBHandler();
-      _editableNote.note_color = note_color;
+      _editableNote.noteColour = noteColor;
       noteDB.insertNote(_editableNote, false);
     }
   }
 
   void _saveAndStartNewNote(BuildContext context){
-    _persistenceTimer.cancel();
+    _persistenceTimer?.cancel();
     var emptyNote = new Note(-1, "", "", DateTime.now(), DateTime.now(), Colors.white);
     Navigator.of(context).pop();
     Navigator.push(context, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
@@ -345,7 +347,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   Future<bool> _readyToPop() async {
-    _persistenceTimer.cancel();
+    _persistenceTimer?.cancel();
     //show saved toast after calling _persistData function.
 
     _persistData();
@@ -361,10 +363,10 @@ class _NotePageState extends State<NotePage> {
               title: Text("Confirm ?"),
               content: Text("This note will be archived"),
               actions: <Widget>[
-                FlatButton(
+                TextButton(
                     onPressed: () => _archiveThisNote(context),
                     child: Text("Yes")),
-                FlatButton(
+                TextButton(
                     onPressed: () => {Navigator.of(context).pop()},
                     child: Text("No"))
               ],
@@ -376,7 +378,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   void _exitWithoutSaving(BuildContext context) {
-    _persistenceTimer.cancel();
+    _persistenceTimer?.cancel();
     CentralStation.updateNeeded = false;
     Navigator.of(context).pop();
   }
@@ -384,16 +386,17 @@ class _NotePageState extends State<NotePage> {
   void _archiveThisNote(BuildContext context) {
     Navigator.of(context).pop();
     // set archived flag to true and send the entire note object in the database to be updated
-    _editableNote.is_archived = 1;
+    _editableNote.isArchived = 1;
     var noteDB = NotesDBHandler();
     noteDB.archiveNote(_editableNote);
     // update will be required to remove the archived note from the staggered view
     CentralStation.updateNeeded = true;
-    _persistenceTimer.cancel(); // shutdown the timer
+    _persistenceTimer?.cancel(); // shutdown the timer
 
     Navigator.of(context).pop(); // pop back to staggered view
     // TODO: OPTIONAL show the toast of deletion completion
-    Scaffold.of(context).showSnackBar(new SnackBar(content: Text("deleted")));
+
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(content: Text("deleted")));
   }
 
   void _copy(){
@@ -403,14 +406,14 @@ class _NotePageState extends State<NotePage> {
         _editableNote.content,
         DateTime.now(),
         DateTime.now(),
-        _editableNote.note_color) ;
+        _editableNote.noteColour) ;
 
 
     var status = noteDB.copyNote(copy);
-    status.then((query_success){
-      if (query_success){
+    status.then((querySuccess){
+      if (querySuccess){
         CentralStation.updateNeeded = true;
-        Navigator.of(_globalKey.currentContext).pop();
+        Navigator.of(_globalKey.currentContext!).pop();
       }
     });
   }
@@ -418,8 +421,8 @@ class _NotePageState extends State<NotePage> {
 
 
   void _undo() {
-    _titleController.text = _titleFrominitial;// widget.noteInEditing.title;
+    _titleController.text = _titleFromInitial;// widget.noteInEditing.title;
     _contentController.text = _contentFromInitial;// widget.noteInEditing.content;
-    _editableNote.date_last_edited = _lastEditedForUndo;// widget.noteInEditing.date_last_edited;
+    _editableNote.dateLastEdited = _lastEditedForUndo;// widget.noteInEditing.date_last_edited;
   }
 }

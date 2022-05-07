@@ -6,12 +6,12 @@ class Note {
   int id;
   String title;
   String content;
-  DateTime date_created;
-  DateTime date_last_edited;
-  Color note_color;
-  int is_archived = 0;
+  DateTime dateCreated;
+  DateTime dateLastEdited;
+  Color noteColour;
+  int isArchived = 0;
 
-  Note(this.id, this.title, this.content, this.date_created, this.date_last_edited,this.note_color);
+  Note(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,this.noteColour);
 
 
   Map<String, dynamic> toMap(bool forUpdate) {
@@ -19,10 +19,10 @@ class Note {
 //      'id': id,  since id is auto incremented in the database we don't need to send it to the insert query.
       'title': utf8.encode(title),
       'content': utf8.encode( content ),
-      'date_created': epochFromDate( date_created ),
-      'date_last_edited': epochFromDate( date_last_edited ),
-      'note_color': note_color.value,
-      'is_archived': is_archived  //  for later use for integrating archiving
+      'date_created': epochFromDate( dateCreated ),
+      'date_last_edited': epochFromDate( dateLastEdited ),
+      'note_color': noteColour.value,
+      'is_archived': isArchived  //  for later use for integrating archiving
     };
     if(forUpdate){
       data["id"] = this.id;
@@ -36,7 +36,7 @@ int epochFromDate(DateTime dt) {
 }
 
 void archiveThisNote() {
-      is_archived = 1;
+      isArchived = 1;
 }
 
 // overriding toString() of the note class to print a better debug description of this custom class
@@ -45,10 +45,10 @@ void archiveThisNote() {
     'id': id,
     'title': title,
     'content': content ,
-    'date_created': epochFromDate( date_created ),
-    'date_last_edited': epochFromDate( date_last_edited ),
-    'note_color': note_color.toString(),
-    'is_archived':is_archived
+    'date_created': epochFromDate( dateCreated ),
+    'date_last_edited': epochFromDate( dateLastEdited ),
+    'note_color': noteColour.toString(),
+    'is_archived':isArchived
   }.toString();
 }
 

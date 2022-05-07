@@ -2,17 +2,12 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
 class CentralStation {
-  static bool _updateNeeded ;
+  static bool _updateNeeded = true;
 
   static final fontColor = Color(0xff595959);
   static final  borderColor = Color(0xffd3d3d3) ;
 
-  static init() {
-    if (_updateNeeded == null)
-      _updateNeeded = true;
-  }
   static bool get updateNeeded {
-    init();
     if (_updateNeeded) {
       return true;
     } else {

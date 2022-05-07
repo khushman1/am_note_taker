@@ -15,17 +15,17 @@ class MyStaggeredTile extends StatefulWidget {
 
 class _MyStaggeredTileState extends State<MyStaggeredTile> {
 
-  String _content ;
-  double _fontSize ;
-  Color tileColor ;
-  String title;
+  late String _content ;
+  late double _fontSize ;
+  late Color tileColor ;
+  late String title;
 
   @override
   Widget build(BuildContext context) {
 
     _content = widget.note.content;
     _fontSize = _determineFontSizeForContent();
-    tileColor = widget.note.note_color;
+    tileColor = widget.note.noteColour;
     title = widget.note.title;
 
     return GestureDetector(

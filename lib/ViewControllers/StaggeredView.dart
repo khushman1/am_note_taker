@@ -9,7 +9,7 @@ import 'HomePage.dart';
 
 class StaggeredGridPage extends StatefulWidget {
   final notesViewType;
-  const StaggeredGridPage({Key key, this.notesViewType}) : super(key: key);
+  const StaggeredGridPage({Key? key, this.notesViewType}) : super(key: key);
   @override
   _StaggeredGridPageState createState() => _StaggeredGridPageState();
 }
@@ -18,7 +18,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 
   var  noteDB = NotesDBHandler();
   List<Map<String, dynamic>> _allNotesInQueryResult = [];
-  viewType notesViewType ;
+  late viewType notesViewType ;
 
 @override
   void initState() {
@@ -69,13 +69,13 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 EdgeInsets _paddingForView(BuildContext context){
   double width = MediaQuery.of(context).size.width;
   double padding ;
-  double top_bottom = 8;
+  double topBottom = 8;
   if (width > 500) {
     padding = ( width ) * 0.05 ; // 5% padding of width on both side
   } else {
     padding = 8;
   }
-  return EdgeInsets.only(left: padding, right: padding, top: top_bottom, bottom: top_bottom);
+  return EdgeInsets.only(left: padding, right: padding, top: topBottom, bottom: topBottom);
 }
 
 
@@ -96,7 +96,7 @@ EdgeInsets _paddingForView(BuildContext context){
     var _testData = noteDB.selectAllNotes();
     _testData.then((value){
         setState(() {
-          this._allNotesInQueryResult = value;
+          this._allNotesInQueryResult = value!;
           CentralStation.updateNeeded = false;
         });
     });

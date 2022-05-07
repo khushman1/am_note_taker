@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'StaggeredView.dart';
 import '../Models/Note.dart';
 import 'NotePage.dart';
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   var notesViewType ;
   @override void initState() {
     notesViewType = viewType.Staggered;
+    super.initState();
   }
 
   @override
@@ -27,8 +29,8 @@ class _HomePageState extends State<HomePage> {
 
     return
        Scaffold(
-      resizeToAvoidBottomPadding: false,
-      appBar: AppBar(brightness: Brightness.light,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: _appBarActions(),
         elevation: 1,
         backgroundColor: Colors.white,
@@ -50,7 +52,7 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        FlatButton(
+        TextButton(
           child: Text(
             "New Note\n",
             style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
