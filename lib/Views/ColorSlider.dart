@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 
 class ColorSlider extends StatefulWidget {
-  final void Function(Color)  callBackColorTapped ;
+  final void Function(Color)  callBackColorTapped;
   final Color noteColor ;
   const ColorSlider({required this.callBackColorTapped, required this.noteColor});
   @override
