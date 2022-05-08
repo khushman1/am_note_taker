@@ -6,8 +6,9 @@ import '../Models/Utility.dart';
 
 class MyStaggeredTile extends StatefulWidget {
   final Note note;
+  final void Function() refreshTriggeredCallback;
 
-  const MyStaggeredTile(this.note);
+  MyStaggeredTile(this.note, this.refreshTriggeredCallback);
 
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
@@ -54,6 +55,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
   void _refreshIfNeeded() {
     if (CentralStation.updateNeeded) {
       setState(() {});
+      widget.refreshTriggeredCallback();
     }
   }
 

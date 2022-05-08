@@ -35,6 +35,11 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     notesViewType = widget.notesViewType;
   }
 
+  void _refreshTriggered()
+  {
+    retrieveAllNotesFromDatabase();
+  }
+
   @override
   Widget build(BuildContext context) {
     GlobalKey _stagKey = GlobalKey();
@@ -101,7 +106,8 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
             _allNotesInQueryResult[i]["date_created"] * 1000),
         DateTime.fromMillisecondsSinceEpoch(
             _allNotesInQueryResult[i]["date_last_edited"] * 1000),
-        Color(_allNotesInQueryResult[i]["note_color"])));
+        Color(_allNotesInQueryResult[i]["note_color"])),
+    _refreshTriggered);
   }
 
   void retrieveAllNotesFromDatabase() {
