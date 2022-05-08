@@ -41,6 +41,7 @@ dependencies:
   intl:
   share:
   uuid:
+  expandable: ^5.0.1
 
 dev_dependencies:
   flutter_test:
