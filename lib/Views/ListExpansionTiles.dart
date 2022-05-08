@@ -5,22 +5,21 @@ import '../ViewControllers/NotePage.dart';
 import '../Models/Note.dart';
 import '../Models/Utility.dart';
 
-class MyStaggeredTile extends StatefulWidget implements NoteTile {
+class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final Note note;
+
   @override
   final void Function() refreshTriggeredCallback;
-  final bool showContent;
 
-  const MyStaggeredTile(this.note, this.refreshTriggeredCallback,
-      this.showContent);
+  const ListExpansionTile(this.note, this.refreshTriggeredCallback,
+      {Key? key}) : super(key: key);
 
   @override
-  _MyStaggeredTileState createState() => _MyStaggeredTileState();
+  _ListExpansionTileState createState() => _ListExpansionTileState();
 }
 
-class _MyStaggeredTileState extends State<MyStaggeredTile> {
-
+class _ListExpansionTileState extends State<ListExpansionTile> {
   late String _content;
 
   late double _fontSize;
@@ -29,12 +28,20 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
 
   late String title;
 
+  bool expanded = false;
+
   @override
   Widget build(BuildContext context) {
     _content = widget.note.content;
     _fontSize = _determineFontSizeForContent();
     tileColor = widget.note.noteColour;
     title = widget.note.title;
+
+    return Card(
+      child: constructChild(),
+      color: tileColor,
+      shadowColor: tileColor,
+    );
 
     return GestureDetector(
       onTap: () => _noteTapped(context),
@@ -66,6 +73,56 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
   }
 
   Widget constructChild() {
+    Widget? contentWidget;
+    List<Widget> childrenWidgets = [];
+    Widget contentInkwell = InkWell(
+      splashColor: ColorUtils.invert(widget.note.noteColour).withAlpha(30),
+      onTap: () => _noteTapped(context),
+      child: AutoSizeText(
+        _content,
+        style: TextStyle(fontSize: _fontSize),
+        maxLines: 2,
+        textScaleFactor: 1.5,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+    Widget titleWidget = contentInkwell;
+
+    if (widget.note.title.isNotEmpty) {
+      contentWidget = Padding(
+        padding: EdgeInsets.all(4),
+        child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: tileColor == Colors.white
+                    ? CentralStation.borderColor
+                    : ColorUtils.darken(tileColor, 0.3)),
+                color: ColorUtils.darken(tileColor, 0.1),
+                borderRadius: const BorderRadius.all(Radius.circular(4))),
+            child: ListTile(
+              title: contentInkwell,
+            ),
+        ),
+      );
+
+      titleWidget = AutoSizeText(
+          title,
+          style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
+          maxLines: widget.note.title.isEmpty ? 1 : 3,
+          textScaleFactor: 1.5,
+          overflow: TextOverflow.ellipsis,
+      );
+      childrenWidgets.add(contentWidget);
+      return ExpansionTile(
+        title: titleWidget,
+        children: childrenWidgets,
+        textColor: Colors.black54,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: titleWidget,
+    );
+
     List<Widget> contentsOfTiles = [];
 
     if (widget.note.title.isNotEmpty) {
@@ -85,14 +142,12 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
       );
     }
 
-    if (widget.showContent) {
-      contentsOfTiles.add(AutoSizeText(
-        _content,
-        style: TextStyle(fontSize: _fontSize),
-        maxLines: 10,
-        textScaleFactor: 1.5,
-      ));
-    }
+    contentsOfTiles.add(AutoSizeText(
+      _content,
+      style: TextStyle(fontSize: _fontSize),
+      maxLines: 10,
+      textScaleFactor: 1.5,
+    ));
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

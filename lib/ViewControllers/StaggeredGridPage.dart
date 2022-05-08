@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:am_note_taker/Views/ListExpansionTiles.dart';
+import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -54,8 +56,8 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
       padding: _paddingForView(context),
       child: StaggeredGridView.count(
         key: _stagKey,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 6,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 2,
         crossAxisCount: _colForStaggeredView(context),
         children: List.generate(_allNotesInQueryResult.length, (i) {
           return _tileGenerator(i);
@@ -93,8 +95,8 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
         left: padding, right: padding, top: topBottom, bottom: topBottom);
   }
 
-  MyStaggeredTile _tileGenerator(int i) {
-    return MyStaggeredTile(Note(
+  NoteTile _tileGenerator(int i) {
+    Note currentNote = Note(
         _allNotesInQueryResult[i]["id"],
         _allNotesInQueryResult[i]["title"] == null
             ? ""
@@ -106,8 +108,14 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
             _allNotesInQueryResult[i]["date_created"] * 1000),
         DateTime.fromMillisecondsSinceEpoch(
             _allNotesInQueryResult[i]["date_last_edited"] * 1000),
-        Color(_allNotesInQueryResult[i]["note_color"])),
-    _refreshTriggered, widget.notesViewType != viewType.List);
+        Color(_allNotesInQueryResult[i]["note_color"]));
+
+    if (widget.notesViewType == viewType.Staggered) {
+      return MyStaggeredTile(currentNote, _refreshTriggered,
+          widget.notesViewType != viewType.List);
+    } else {
+      return ListExpansionTile(currentNote, _refreshTriggered);
+    }
   }
 
   void retrieveAllNotesFromDatabase() {
