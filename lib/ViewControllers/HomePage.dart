@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
   void _newNoteTapped(BuildContext ctx) {
     // Note.freshNoteUUID id indicates the note is not new
     var emptyNote = Note(Note.freshNoteUUID, "", "", DateTime.now(),
-        DateTime.now(), Colors.white);
+        DateTime.now(), Colors.white, null);
     Navigator.push(
         ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)))
             .then((value) => setState(() {}));

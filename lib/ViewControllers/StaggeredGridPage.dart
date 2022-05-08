@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
@@ -22,7 +23,7 @@ class StaggeredGridPage extends StatefulWidget {
 
 class _StaggeredGridPageState extends State<StaggeredGridPage> {
   var noteDB = NotesDBHandler();
-  List<Map<String, dynamic>> _allNotesInQueryResult = [];
+  late HashSet<Note> _allNotesInQueryResult = HashSet();
   late viewType notesViewType;
 
   @override
@@ -37,8 +38,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     notesViewType = widget.notesViewType;
   }
 
-  void _refreshTriggered()
-  {
+  void _refreshTriggered() {
     retrieveAllNotesFromDatabase();
   }
 
@@ -96,19 +96,10 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
   }
 
   NoteTile _tileGenerator(int i) {
-    Note currentNote = Note(
-        _allNotesInQueryResult[i]["id"],
-        _allNotesInQueryResult[i]["title"] == null
-            ? ""
-            : utf8.decode(_allNotesInQueryResult[i]["title"]),
-        _allNotesInQueryResult[i]["content"] == null
-            ? ""
-            : utf8.decode(_allNotesInQueryResult[i]["content"]),
-        DateTime.fromMillisecondsSinceEpoch(
-            _allNotesInQueryResult[i]["date_created"] * 1000),
-        DateTime.fromMillisecondsSinceEpoch(
-            _allNotesInQueryResult[i]["date_last_edited"] * 1000),
-        Color(_allNotesInQueryResult[i]["note_color"]));
+    Note currentNote = _allNotesInQueryResult.elementAt(i);
+    if (kDebugMode) {
+      print("Generating $i tile");
+    }
 
     if (widget.notesViewType == viewType.Staggered) {
       return MyStaggeredTile(currentNote, _refreshTriggered,
@@ -119,17 +110,64 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
   }
 
   void retrieveAllNotesFromDatabase() {
-    if (kDebugMode)
-      {
-        print("Retrieving all notes from db.");
-      }
+    if (kDebugMode) {
+      print("Retrieving all notes from db.");
+    }
     // queries for all the notes from the database ordered by latest edited note. excludes archived notes.
     var _testData = noteDB.selectAllNotes();
     _testData.then((value) {
-      setState(() {
-        _allNotesInQueryResult = value!;
-        CentralStation.updateNeeded = false;
-      });
+      if (kDebugMode) {
+        int? count = value?.length;
+        print("Retrieved $count notes from db.");
+      }
+      if (value != null) {
+        HashSet<Note> noteSet = readDatabaseNotes(value);
+        setState(() {
+          _allNotesInQueryResult = noteSet;
+          CentralStation.updateNeeded = false;
+        });
+      }
     });
+  }
+
+  HashSet<Note> readDatabaseNotes(List<Map<String, dynamic>>? value)
+  {
+    HashMap<String, Note> noteIdMap = HashMap();
+    HashSet<Note> noteSet = HashSet();
+    if (value != null) {
+      for (var e in value) {
+        Note currentNote = convertMapToNote(e);
+        noteSet.add(currentNote);
+        noteIdMap[currentNote.id] = currentNote;
+      }
+      if (kDebugMode) {
+        print("Values loaded successfully.");
+      }
+
+      // Fill in parent and children references
+      for (var e in value) {
+        Note? currentNote = noteIdMap[e["id"]];
+        if (currentNote != null) {
+          currentNote.parent = noteIdMap[e["parent"]];
+          currentNote.parent?.children.add(currentNote);
+        }
+      }
+      if (kDebugMode) {
+        print("Values referenced successfully.");
+      }
+    }
+    return noteSet;
+  }
+
+  Note convertMapToNote(Map<String, dynamic> map) {
+    return Note(
+      map["id"],
+      map["title"] == null ? "" : utf8.decode(map["title"]),
+      map["content"] == null ? "" : utf8.decode(map["content"]),
+      DateTime.fromMillisecondsSinceEpoch(map["date_created"] * 1000),
+      DateTime.fromMillisecondsSinceEpoch(map["date_last_edited"] * 1000),
+      Color(map["note_color"]),
+      null
+    );
   }
 }

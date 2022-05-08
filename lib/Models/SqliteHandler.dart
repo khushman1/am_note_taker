@@ -8,14 +8,15 @@ class NotesDBHandler {
   final databaseName = "notes.db";
   final tableName = "notes";
 
-  final fieldMap = {
+  final noteEntryMap = {
     "id": "BLOB PRIMARY KEY",
     "title": "BLOB",
     "content": "BLOB",
     "date_created": "INTEGER",
     "date_last_edited": "INTEGER",
     "note_color": "INTEGER",
-    "is_archived": "INTEGER"
+    "is_archived": "INTEGER",
+    "parent": "BLOB"
   };
 
   static Database? _database;
@@ -51,7 +52,7 @@ class NotesDBHandler {
     String query = "CREATE TABLE IF NOT EXISTS ";
     query += tableName;
     query += "(";
-    fieldMap.forEach((column, field) {
+    noteEntryMap.forEach((column, field) {
       if (kDebugMode) {
         print("$column : $field");
       }

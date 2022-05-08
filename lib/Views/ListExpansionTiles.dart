@@ -42,23 +42,9 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
       color: tileColor,
       shadowColor: tileColor,
     );
-
-    return GestureDetector(
-      onTap: () => _noteTapped(context),
-      child: Container(
-        decoration: BoxDecoration(
-            border: tileColor == Colors.white
-                ? Border.all(color: CentralStation.borderColor)
-                : null,
-            color: tileColor,
-            borderRadius: const BorderRadius.all(Radius.circular(8))),
-        padding: const EdgeInsets.all(8),
-        child: constructChild(),
-      ),
-    );
   }
 
-  void _noteTapped(BuildContext ctx) {
+  void _noteOpened(BuildContext ctx) {
     CentralStation.updateNeeded = false;
     Navigator.push(
         ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)))
@@ -77,7 +63,7 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
     List<Widget> childrenWidgets = [];
     Widget contentInkwell = InkWell(
       splashColor: ColorUtils.invert(widget.note.noteColour).withAlpha(30),
-      onTap: () => _noteTapped(context),
+      onTap: () => _noteOpened(context),
       child: AutoSizeText(
         _content,
         style: TextStyle(fontSize: _fontSize),
@@ -122,37 +108,6 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
       padding: const EdgeInsets.all(16),
       child: titleWidget,
     );
-
-    List<Widget> contentsOfTiles = [];
-
-    if (widget.note.title.isNotEmpty) {
-      contentsOfTiles.add(
-        AutoSizeText(
-          title,
-          style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
-          maxLines: widget.note.title.isEmpty ? 1 : 3,
-          textScaleFactor: 1.5,
-        ),
-      );
-      contentsOfTiles.add(
-        const Divider(
-          color: Colors.transparent,
-          height: 6,
-        ),
-      );
-    }
-
-    contentsOfTiles.add(AutoSizeText(
-      _content,
-      style: TextStyle(fontSize: _fontSize),
-      maxLines: 10,
-      textScaleFactor: 1.5,
-    ));
-
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: contentsOfTiles);
   }
 
   double _determineFontSizeForContent() {

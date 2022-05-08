@@ -219,17 +219,19 @@ class _NotePageState extends State<NotePage> {
 
     var noteDB = NotesDBHandler();
 
-    if (_editableNote.id == Note.freshNoteUUID) {
-      Future<String> autoIncrementedId =
-          noteDB.insertNote(_editableNote, true); // for new note
-      // set the id of the note from the database after inserting the new note so for next persisting
-      autoIncrementedId.then((value) {
-        _editableNote.id = value;
-      });
-    } else {
-      noteDB.insertNote(
-          _editableNote, false); // for updating the existing note
-    }
+    noteDB.insertNote(_editableNote, _editableNote.id == Note.freshNoteUUID);
+    // if (_editableNote.id == Note.freshNoteUUID) {
+    //   noteDB.insertNote(_editableNote, true);
+    //   Future<String> autoIncrementedId =
+    //       noteDB.insertNote(_editableNote, true); // for new note
+    //   // set the id of the note from the database after inserting the new note so for next persisting
+    //   autoIncrementedId.then((value) {
+    //     _editableNote.id = value;
+    //   });
+    // } else {
+    //   noteDB.insertNote(
+    //       _editableNote, false); // for updating the existing note
+    // }
   }
 
 // this function will ne used to save the updated editing value of the note to the local variables as user types
@@ -342,7 +344,8 @@ class _NotePageState extends State<NotePage> {
   void _saveAndStartNewNote(BuildContext context) {
     _persistenceTimer?.cancel();
     var emptyNote =
-        Note(Note.freshNoteUUID, "", "", DateTime.now(), DateTime.now(), Colors.white);
+        Note(Note.freshNoteUUID, "", "", DateTime.now(), DateTime.now(),
+            Colors.white, null);
     Navigator.of(context).pop();
     Navigator.push(
         context, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
@@ -405,7 +408,8 @@ class _NotePageState extends State<NotePage> {
   void _copy() {
     var noteDB = NotesDBHandler();
     Note copy = Note(Note.freshNoteUUID, _editableNote.title, _editableNote.content,
-        DateTime.now(), DateTime.now(), _editableNote.noteColour);
+        DateTime.now(), DateTime.now(), _editableNote.noteColour,
+        _editableNote.parent);
 
     var status = noteDB.copyNote(copy);
     status.then((querySuccess) {

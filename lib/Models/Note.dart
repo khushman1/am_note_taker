@@ -1,9 +1,11 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 class Note {
   static const String freshNoteUUID = "__freshnote__";
+  Uuid uuid = const Uuid();
 
   String id;
   String title;
@@ -12,10 +14,11 @@ class Note {
   DateTime dateLastEdited;
   Color noteColour;
   int isArchived = 0;
-  Uuid uuid = const Uuid();
+  Note? parent;
+  HashSet<Note> children = HashSet();
 
   Note(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,
-      this.noteColour);
+      this.noteColour, this.parent);
 
   Map<String, dynamic> toMap(bool forUpdate) {
     var data = {
@@ -25,7 +28,8 @@ class Note {
       'date_created': epochFromDate(dateCreated),
       'date_last_edited': epochFromDate(dateLastEdited),
       'note_color': noteColour.value,
-      'is_archived': isArchived
+      'is_archived': isArchived,
+      'parent': parent?.id
       //  for later use for integrating archiving
     };
     if (forUpdate) {
@@ -53,7 +57,8 @@ class Note {
       'date_created': epochFromDate(dateCreated),
       'date_last_edited': epochFromDate(dateLastEdited),
       'note_color': noteColour.toString(),
-      'is_archived': isArchived
+      'is_archived': isArchived,
+      'parent': parent?.id
     }.toString();
   }
 }
