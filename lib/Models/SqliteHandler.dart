@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
-import 'Note.dart';
+import 'NoteModel.dart';
 
 class NotesDBHandler {
   final databaseName = "notes.db";
@@ -70,7 +70,7 @@ class NotesDBHandler {
     return path;
   }
 
-  Future<String> insertNote(Note note, bool isNew) async {
+  Future<String> insertNote(NoteModel note, bool isNew) async {
     // Get a reference to the database
     final Database? db = await database;
     if (kDebugMode) {
@@ -97,7 +97,7 @@ class NotesDBHandler {
     return note.id;
   }
 
-  Future<bool> copyNote(Note note) async {
+  Future<bool> copyNote(NoteModel note) async {
     final Database? db = await database;
     try {
       await db?.insert("notes", note.toMap(false),
@@ -111,8 +111,8 @@ class NotesDBHandler {
     return true;
   }
 
-  Future<bool> archiveNote(Note note) async {
-    if (note.id != Note.freshNoteUUID) {
+  Future<bool> archiveNote(NoteModel note) async {
+    if (note.id != NoteModel.freshNoteUUID) {
       final Database? db = await database;
 
       String idToUpdate = note.id;
@@ -124,8 +124,8 @@ class NotesDBHandler {
     return false;
   }
 
-  Future<bool> deleteNote(Note note) async {
-    if (note.id != Note.freshNoteUUID) {
+  Future<bool> deleteNote(NoteModel note) async {
+    if (note.id != NoteModel.freshNoteUUID) {
       final Database? db = await database;
       try {
         await db?.delete("notes", where: "id = ?", whereArgs: [note.id]);

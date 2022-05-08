@@ -5,7 +5,7 @@ import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import '../Models/Note.dart';
+import '../Models/NoteModel.dart';
 import '../Models/SqliteHandler.dart';
 import '../Models/Utility.dart';
 import '../Views/StaggeredTiles.dart';
@@ -23,7 +23,7 @@ class StaggeredGridPage extends StatefulWidget {
 
 class _StaggeredGridPageState extends State<StaggeredGridPage> {
   var noteDB = NotesDBHandler();
-  late LinkedHashSet<Note> _allNotesInQueryResult = LinkedHashSet();
+  late LinkedHashSet<NoteModel> _allNotesInQueryResult = LinkedHashSet();
   late viewType notesViewType;
 
   @override
@@ -97,7 +97,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
   }
 
   NoteTile _tileGenerator(int i) {
-    Note currentNote = _allNotesInQueryResult.elementAt(i);
+    NoteModel currentNote = _allNotesInQueryResult.elementAt(i);
     if (kDebugMode) {
       print("Generating $i tile");
     }
@@ -122,7 +122,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
         print("Retrieved $count notes from db.");
       }
       if (value != null) {
-        LinkedHashSet<Note> noteSet = readDatabaseNotes(value);
+        LinkedHashSet<NoteModel> noteSet = readDatabaseNotes(value);
         setState(() {
           _allNotesInQueryResult = noteSet;
           CentralStation.updateNeeded = false;
@@ -131,13 +131,13 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     });
   }
 
-  LinkedHashSet<Note> readDatabaseNotes(List<Map<String, dynamic>>? value)
+  LinkedHashSet<NoteModel> readDatabaseNotes(List<Map<String, dynamic>>? value)
   {
-    HashMap<String, Note> noteIdMap = HashMap();
-    LinkedHashSet<Note> noteSet = LinkedHashSet();
+    HashMap<String, NoteModel> noteIdMap = HashMap();
+    LinkedHashSet<NoteModel> noteSet = LinkedHashSet();
     if (value != null) {
       for (var e in value) {
-        Note currentNote = convertMapToNote(e);
+        NoteModel currentNote = convertMapToNote(e);
         noteSet.add(currentNote);
         noteIdMap[currentNote.id] = currentNote;
       }
@@ -147,7 +147,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 
       // Fill in parent and children references
       for (var e in value) {
-        Note? currentNote = noteIdMap[e["id"]];
+        NoteModel? currentNote = noteIdMap[e["id"]];
         if (currentNote != null) {
           currentNote.parent = noteIdMap[e["parent"]];
           currentNote.parent?.children.add(currentNote);
@@ -160,8 +160,8 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     return noteSet;
   }
 
-  Note convertMapToNote(Map<String, dynamic> map) {
-    return Note(
+  NoteModel convertMapToNote(Map<String, dynamic> map) {
+    return NoteModel(
       map["id"],
       map["title"] == null ? "" : utf8.decode(map["title"]),
       map["content"] == null ? "" : utf8.decode(map["content"]),

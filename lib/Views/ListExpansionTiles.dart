@@ -2,12 +2,12 @@ import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '../ViewControllers/NotePage.dart';
-import '../Models/Note.dart';
+import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 
 class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
-  final Note note;
+  final NoteModel note;
 
   @override
   final void Function() refreshTriggeredCallback;
@@ -53,8 +53,8 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
 
   void _refreshIfNeeded() {
     if (CentralStation.updateNeeded && mounted) {
-      setState(() {});
       widget.refreshTriggeredCallback();
+      setState(() {});
     }
   }
 

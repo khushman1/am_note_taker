@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'StaggeredGridPage.dart';
-import '../Models/Note.dart';
+import '../Models/NoteModel.dart';
 import 'NotePage.dart';
 import '../Models/Utility.dart';
 
@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
 
   void _newNoteTapped(BuildContext ctx) {
     // Note.freshNoteUUID id indicates the note is not new
-    var emptyNote = Note(Note.freshNoteUUID, "", "", DateTime.now(),
+    var emptyNote = NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
         DateTime.now(), Colors.white, null);
     Navigator.push(
         ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)))

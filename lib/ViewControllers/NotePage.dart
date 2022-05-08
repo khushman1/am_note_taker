@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../Models/Note.dart';
+import '../Models/NoteModel.dart';
 import '../Models/SqliteHandler.dart';
 import 'dart:async';
 import '../Models/Utility.dart';
@@ -9,7 +9,7 @@ import '../Views/MoreOptionsSheet.dart';
 import 'package:share/share.dart';
 
 class NotePage extends StatefulWidget {
-  final Note noteInEditing;
+  final NoteModel noteInEditing;
 
   const NotePage(this.noteInEditing);
 
@@ -30,7 +30,7 @@ class _NotePageState extends State<NotePage> {
   late Color _colorFromInitial;
   DateTime _lastEditedForUndo = DateTime.now();
 
-  late Note _editableNote;
+  late NoteModel _editableNote;
 
   // the timer variable responsible to call persistData function every 5 seconds and cancel the timer when the page pops.
   Timer? _persistenceTimer;
@@ -50,7 +50,7 @@ class _NotePageState extends State<NotePage> {
     _contentFromInitial = widget.noteInEditing.content;
     _colorFromInitial = widget.noteInEditing.noteColour;
 
-    if (widget.noteInEditing.id == Note.freshNoteUUID) {
+    if (widget.noteInEditing.id == NoteModel.freshNoteUUID) {
       _isNewNote = true;
     }
     _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
@@ -65,7 +65,7 @@ class _NotePageState extends State<NotePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_editableNote.id == Note.freshNoteUUID && _editableNote.title.isEmpty) {
+    if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
 
@@ -141,12 +141,12 @@ class _NotePageState extends State<NotePage> {
   }
 
   Widget _pageTitle() {
-    return Text(_editableNote.id == Note.freshNoteUUID ? "New Note" : "Edit Note");
+    return Text(_editableNote.id == NoteModel.freshNoteUUID ? "New Note" : "Edit Note");
   }
 
   List<Widget> _archiveAction(BuildContext context) {
     List<Widget> actions = [];
-    if (widget.noteInEditing.id != Note.freshNoteUUID) {
+    if (widget.noteInEditing.id != NoteModel.freshNoteUUID) {
       actions.add(Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
@@ -209,7 +209,7 @@ class _NotePageState extends State<NotePage> {
 
     var noteDB = NotesDBHandler();
 
-    noteDB.insertNote(_editableNote, _editableNote.id == Note.freshNoteUUID)
+    noteDB.insertNote(_editableNote, _editableNote.id == NoteModel.freshNoteUUID)
         .then((value) => _editableNote.id = value);
     // if (_editableNote.id == Note.freshNoteUUID) {
     //   noteDB.insertNote(_editableNote, true);
@@ -259,7 +259,7 @@ class _NotePageState extends State<NotePage> {
     switch (tappedOption) {
       case moreOptions.delete:
         {
-          if (_editableNote.id != Note.freshNoteUUID) {
+          if (_editableNote.id != NoteModel.freshNoteUUID) {
             _deleteNote(_globalKey.currentContext);
           } else {
             _exitWithoutSaving(context);
@@ -283,7 +283,7 @@ class _NotePageState extends State<NotePage> {
 
   void _deleteNote(BuildContext? context) {
     if (context == null) return;
-    if (_editableNote.id != Note.freshNoteUUID) {
+    if (_editableNote.id != NoteModel.freshNoteUUID) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -325,7 +325,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   void _persistColorChange() {
-    if (_editableNote.id != Note.freshNoteUUID) {
+    if (_editableNote.id != NoteModel.freshNoteUUID) {
       var noteDB = NotesDBHandler();
       _editableNote.noteColour = noteColor;
       noteDB.insertNote(_editableNote, false);
@@ -335,7 +335,7 @@ class _NotePageState extends State<NotePage> {
   void _saveAndStartNewNote(BuildContext context) {
     _persistenceTimer?.cancel();
     var emptyNote =
-        Note(Note.freshNoteUUID, "", "", DateTime.now(), DateTime.now(),
+        NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(), DateTime.now(),
             Colors.white, null);
     Navigator.of(context).pop();
     Navigator.push(
@@ -351,7 +351,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   void _archivePopup(BuildContext context) {
-    if (_editableNote.id != Note.freshNoteUUID) {
+    if (_editableNote.id != NoteModel.freshNoteUUID) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -398,7 +398,7 @@ class _NotePageState extends State<NotePage> {
 
   void _copy() {
     var noteDB = NotesDBHandler();
-    Note copy = Note(Note.freshNoteUUID, _editableNote.title, _editableNote.content,
+    NoteModel copy = NoteModel(NoteModel.freshNoteUUID, _editableNote.title, _editableNote.content,
         DateTime.now(), DateTime.now(), _editableNote.noteColour,
         _editableNote.parent);
 

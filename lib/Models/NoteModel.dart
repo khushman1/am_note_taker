@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-class Note {
+class NoteModel {
   static const String freshNoteUUID = "__freshnote__";
   Uuid uuid = const Uuid();
 
@@ -14,10 +14,10 @@ class Note {
   DateTime dateLastEdited;
   Color noteColour;
   int isArchived = 0;
-  Note? parent;
-  HashSet<Note> children = HashSet();
+  NoteModel? parent;
+  HashSet<NoteModel> children = HashSet();
 
-  Note(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,
+  NoteModel(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,
       this.noteColour, this.parent);
 
   Map<String, dynamic> toMap(bool forUpdate) {
