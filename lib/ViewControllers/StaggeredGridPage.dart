@@ -40,6 +40,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
 
   void _refreshTriggered() {
     retrieveAllNotesFromDatabase();
+    setState(() {});
   }
 
   @override
@@ -141,7 +142,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
         noteIdMap[currentNote.id] = currentNote;
       }
       if (kDebugMode) {
-        print("Values loaded successfully.");
+        print("Values loaded successfully. $noteSet");
       }
 
       // Fill in parent and children references

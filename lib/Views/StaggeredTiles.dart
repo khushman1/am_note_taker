@@ -59,7 +59,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
   }
 
   void _refreshIfNeeded() {
-    if (CentralStation.updateNeeded) {
+    if (CentralStation.updateNeeded && mounted) {
       setState(() {});
       widget.refreshTriggeredCallback();
     }

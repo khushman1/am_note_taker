@@ -219,7 +219,8 @@ class _NotePageState extends State<NotePage> {
 
     var noteDB = NotesDBHandler();
 
-    noteDB.insertNote(_editableNote, _editableNote.id == Note.freshNoteUUID);
+    noteDB.insertNote(_editableNote, _editableNote.id == Note.freshNoteUUID)
+        .then((value) => _editableNote.id = value);
     // if (_editableNote.id == Note.freshNoteUUID) {
     //   noteDB.insertNote(_editableNote, true);
     //   Future<String> autoIncrementedId =

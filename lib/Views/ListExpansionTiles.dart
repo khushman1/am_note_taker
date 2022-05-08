@@ -52,7 +52,7 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
   }
 
   void _refreshIfNeeded() {
-    if (CentralStation.updateNeeded) {
+    if (CentralStation.updateNeeded && mounted) {
       setState(() {});
       widget.refreshTriggeredCallback();
     }
@@ -76,7 +76,7 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
 
     if (widget.note.title.isNotEmpty) {
       contentWidget = Padding(
-        padding: EdgeInsets.all(4),
+        padding: const EdgeInsets.all(4),
         child: Container(
             decoration: BoxDecoration(
                 border: Border.all(color: tileColor == Colors.white
