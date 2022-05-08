@@ -7,8 +7,9 @@ import '../Models/Utility.dart';
 class MyStaggeredTile extends StatefulWidget {
   final Note note;
   final void Function() refreshTriggeredCallback;
+  final bool showContent;
 
-  MyStaggeredTile(this.note, this.refreshTriggeredCallback);
+  MyStaggeredTile(this.note, this.refreshTriggeredCallback, this.showContent);
 
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
@@ -79,12 +80,14 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
       );
     }
 
-    contentsOfTiles.add(AutoSizeText(
-      _content,
-      style: TextStyle(fontSize: _fontSize),
-      maxLines: 10,
-      textScaleFactor: 1.5,
-    ));
+    if (widget.showContent) {
+      contentsOfTiles.add(AutoSizeText(
+        _content,
+        style: TextStyle(fontSize: _fontSize),
+        maxLines: 10,
+        textScaleFactor: 1.5,
+      ));
+    }
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

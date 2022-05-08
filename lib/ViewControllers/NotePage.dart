@@ -73,7 +73,7 @@ class _NotePageState extends State<NotePage> {
       child: Scaffold(
         key: _globalKey,
         appBar: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           leading: const BackButton(
             color: Colors.black,
           ),
