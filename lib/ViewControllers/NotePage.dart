@@ -27,6 +27,7 @@ class _NotePageState extends State<NotePage> {
 
   String _titleFromInitial = "";
   String _contentFromInitial = "";
+  late Color _colorFromInitial;
   DateTime _lastEditedForUndo = DateTime.now();
 
   late Note _editableNote;
@@ -47,6 +48,7 @@ class _NotePageState extends State<NotePage> {
 
     _titleFromInitial = widget.noteInEditing.title;
     _contentFromInitial = widget.noteInEditing.content;
+    _colorFromInitial = widget.noteInEditing.noteColour;
 
     if (widget.noteInEditing.id == -1) {
       _isNewNote = true;
@@ -215,20 +217,18 @@ class _NotePageState extends State<NotePage> {
   void _persistData() {
     updateNoteObject();
 
-    if (_editableNote.content.isNotEmpty) {
-      var noteDB = NotesDBHandler();
+    var noteDB = NotesDBHandler();
 
-      if (_editableNote.id == -1) {
-        Future<int> autoIncrementedId =
-            noteDB.insertNote(_editableNote, true); // for new note
-        // set the id of the note from the database after inserting the new note so for next persisting
-        autoIncrementedId.then((value) {
-          _editableNote.id = value;
-        });
-      } else {
-        noteDB.insertNote(
-            _editableNote, false); // for updating the existing note
-      }
+    if (_editableNote.id == -1) {
+      Future<int> autoIncrementedId =
+          noteDB.insertNote(_editableNote, true); // for new note
+      // set the id of the note from the database after inserting the new note so for next persisting
+      autoIncrementedId.then((value) {
+        _editableNote.id = value;
+      });
+    } else {
+      noteDB.insertNote(
+          _editableNote, false); // for updating the existing note
     }
   }
 
@@ -326,6 +326,7 @@ class _NotePageState extends State<NotePage> {
       noteColor = newColorSelected;
       _editableNote.noteColour = newColorSelected;
     });
+    updateNoteObject();
     _persistColorChange();
     CentralStation.updateNeeded = true;
   }
@@ -421,5 +422,7 @@ class _NotePageState extends State<NotePage> {
         _contentFromInitial; // widget.noteInEditing.content;
     _editableNote.dateLastEdited =
         _lastEditedForUndo; // widget.noteInEditing.date_last_edited;
+    _editableNote.noteColour =
+        _colorFromInitial; // widget.noteInEditing.note_color
   }
 }

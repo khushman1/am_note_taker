@@ -51,12 +51,11 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
             .then((value) => _refreshIfNeeded());
   }
 
-  void _refreshIfNeeded()
-    {
-      if (CentralStation.updateNeeded) {
-        setState(() {});
-      }
+  void _refreshIfNeeded() {
+    if (CentralStation.updateNeeded) {
+      setState(() {});
     }
+  }
 
   Widget constructChild() {
     List<Widget> contentsOfTiles = [];

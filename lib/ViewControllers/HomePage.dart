@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'StaggeredView.dart';
+import 'StaggeredGridPage.dart';
 import '../Models/Note.dart';
 import 'NotePage.dart';
 import '../Models/Utility.dart';
@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    notesViewType = viewType.Staggered;
+    notesViewType = viewType.List;
     super.initState();
   }
 
