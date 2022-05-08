@@ -23,7 +23,7 @@ class StaggeredGridPage extends StatefulWidget {
 
 class _StaggeredGridPageState extends State<StaggeredGridPage> {
   var noteDB = NotesDBHandler();
-  late HashSet<Note> _allNotesInQueryResult = HashSet();
+  late LinkedHashSet<Note> _allNotesInQueryResult = LinkedHashSet();
   late viewType notesViewType;
 
   @override
@@ -122,7 +122,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
         print("Retrieved $count notes from db.");
       }
       if (value != null) {
-        HashSet<Note> noteSet = readDatabaseNotes(value);
+        LinkedHashSet<Note> noteSet = readDatabaseNotes(value);
         setState(() {
           _allNotesInQueryResult = noteSet;
           CentralStation.updateNeeded = false;
@@ -131,10 +131,10 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     });
   }
 
-  HashSet<Note> readDatabaseNotes(List<Map<String, dynamic>>? value)
+  LinkedHashSet<Note> readDatabaseNotes(List<Map<String, dynamic>>? value)
   {
     HashMap<String, Note> noteIdMap = HashMap();
-    HashSet<Note> noteSet = HashSet();
+    LinkedHashSet<Note> noteSet = LinkedHashSet();
     if (value != null) {
       for (var e in value) {
         Note currentNote = convertMapToNote(e);
