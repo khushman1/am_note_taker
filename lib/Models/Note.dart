@@ -1,21 +1,25 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class Note {
-  int id;
+  static const String freshNoteUUID = "__freshnote__";
+
+  String id;
   String title;
   String content;
   DateTime dateCreated;
   DateTime dateLastEdited;
   Color noteColour;
   int isArchived = 0;
+  Uuid uuid = const Uuid();
 
   Note(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,
       this.noteColour);
 
   Map<String, dynamic> toMap(bool forUpdate) {
     var data = {
-//      'id': id,  since id is auto incremented in the database we don't need to send it to the insert query.
+      'id': uuid.v1(), //  since id is auto incremented in the database we don't need to send it to the insert query.
       'title': utf8.encode(title),
       'content': utf8.encode(content),
       'date_created': epochFromDate(dateCreated),

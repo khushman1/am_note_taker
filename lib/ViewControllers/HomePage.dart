@@ -72,11 +72,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _newNoteTapped(BuildContext ctx) {
-    // "-1" id indicates the note is not new
-    var emptyNote =
-        Note(-1, "", "", DateTime.now(), DateTime.now(), Colors.white);
+    // Note.freshNoteUUID id indicates the note is not new
+    var emptyNote = Note(Note.freshNoteUUID, "", "", DateTime.now(),
+        DateTime.now(), Colors.white);
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
+        ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)))
+            .then((value) => setState(() {}));
   }
 
   void _toggleViewType() {

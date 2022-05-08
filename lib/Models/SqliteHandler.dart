@@ -9,7 +9,7 @@ class NotesDBHandler {
   final tableName = "notes";
 
   final fieldMap = {
-    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "id": "BLOB PRIMARY KEY",
     "title": "BLOB",
     "content": "BLOB",
     "date_created": "INTEGER",
@@ -69,7 +69,7 @@ class NotesDBHandler {
     return path;
   }
 
-  Future<int> insertNote(Note note, bool isNew) async {
+  Future<String> insertNote(Note note, bool isNew) async {
     // Get a reference to the database
     final Database? db = await database;
     if (kDebugMode) {
@@ -90,7 +90,7 @@ class NotesDBHandler {
           where: "is_archived = ?",
           whereArgs: [0],
           limit: 1);
-      int latestId = one?.first["id"] as int;
+      String latestId = one?.first["id"] as String;
       return latestId;
     }
     return note.id;
@@ -111,10 +111,10 @@ class NotesDBHandler {
   }
 
   Future<bool> archiveNote(Note note) async {
-    if (note.id != -1) {
+    if (note.id != Note.freshNoteUUID) {
       final Database? db = await database;
 
-      int idToUpdate = note.id;
+      String idToUpdate = note.id;
 
       db?.update("notes", note.toMap(true),
           where: "id = ?", whereArgs: [idToUpdate]);
@@ -124,7 +124,7 @@ class NotesDBHandler {
   }
 
   Future<bool> deleteNote(Note note) async {
-    if (note.id != -1) {
+    if (note.id != Note.freshNoteUUID) {
       final Database? db = await database;
       try {
         await db?.delete("notes", where: "id = ?", whereArgs: [note.id]);

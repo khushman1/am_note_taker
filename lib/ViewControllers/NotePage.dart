@@ -50,7 +50,7 @@ class _NotePageState extends State<NotePage> {
     _contentFromInitial = widget.noteInEditing.content;
     _colorFromInitial = widget.noteInEditing.noteColour;
 
-    if (widget.noteInEditing.id == -1) {
+    if (widget.noteInEditing.id == Note.freshNoteUUID) {
       _isNewNote = true;
     }
     _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
@@ -65,7 +65,7 @@ class _NotePageState extends State<NotePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_editableNote.id == -1 && _editableNote.title.isEmpty) {
+    if (_editableNote.id == Note.freshNoteUUID && _editableNote.title.isEmpty) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
 
@@ -141,12 +141,12 @@ class _NotePageState extends State<NotePage> {
   }
 
   Widget _pageTitle() {
-    return Text(_editableNote.id == -1 ? "New Note" : "Edit Note");
+    return Text(_editableNote.id == Note.freshNoteUUID ? "New Note" : "Edit Note");
   }
 
   List<Widget> _archiveAction(BuildContext context) {
     List<Widget> actions = [];
-    if (widget.noteInEditing.id != -1) {
+    if (widget.noteInEditing.id != Note.freshNoteUUID) {
       actions.add(Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
@@ -219,8 +219,8 @@ class _NotePageState extends State<NotePage> {
 
     var noteDB = NotesDBHandler();
 
-    if (_editableNote.id == -1) {
-      Future<int> autoIncrementedId =
+    if (_editableNote.id == Note.freshNoteUUID) {
+      Future<String> autoIncrementedId =
           noteDB.insertNote(_editableNote, true); // for new note
       // set the id of the note from the database after inserting the new note so for next persisting
       autoIncrementedId.then((value) {
@@ -266,7 +266,7 @@ class _NotePageState extends State<NotePage> {
     switch (tappedOption) {
       case moreOptions.delete:
         {
-          if (_editableNote.id != -1) {
+          if (_editableNote.id != Note.freshNoteUUID) {
             _deleteNote(_globalKey.currentContext);
           } else {
             _exitWithoutSaving(context);
@@ -290,7 +290,7 @@ class _NotePageState extends State<NotePage> {
 
   void _deleteNote(BuildContext? context) {
     if (context == null) return;
-    if (_editableNote.id != -1) {
+    if (_editableNote.id != Note.freshNoteUUID) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -332,7 +332,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   void _persistColorChange() {
-    if (_editableNote.id != -1) {
+    if (_editableNote.id != Note.freshNoteUUID) {
       var noteDB = NotesDBHandler();
       _editableNote.noteColour = noteColor;
       noteDB.insertNote(_editableNote, false);
@@ -342,7 +342,7 @@ class _NotePageState extends State<NotePage> {
   void _saveAndStartNewNote(BuildContext context) {
     _persistenceTimer?.cancel();
     var emptyNote =
-        Note(-1, "", "", DateTime.now(), DateTime.now(), Colors.white);
+        Note(Note.freshNoteUUID, "", "", DateTime.now(), DateTime.now(), Colors.white);
     Navigator.of(context).pop();
     Navigator.push(
         context, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
@@ -357,7 +357,7 @@ class _NotePageState extends State<NotePage> {
   }
 
   void _archivePopup(BuildContext context) {
-    if (_editableNote.id != -1) {
+    if (_editableNote.id != Note.freshNoteUUID) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -404,7 +404,7 @@ class _NotePageState extends State<NotePage> {
 
   void _copy() {
     var noteDB = NotesDBHandler();
-    Note copy = Note(-1, _editableNote.title, _editableNote.content,
+    Note copy = Note(Note.freshNoteUUID, _editableNote.title, _editableNote.content,
         DateTime.now(), DateTime.now(), _editableNote.noteColour);
 
     var status = noteDB.copyNote(copy);

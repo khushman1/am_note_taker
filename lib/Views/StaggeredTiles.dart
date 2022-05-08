@@ -9,7 +9,7 @@ class MyStaggeredTile extends StatefulWidget {
   final void Function() refreshTriggeredCallback;
   final bool showContent;
 
-  MyStaggeredTile(this.note, this.refreshTriggeredCallback, this.showContent);
+  const MyStaggeredTile(this.note, this.refreshTriggeredCallback, this.showContent);
 
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();

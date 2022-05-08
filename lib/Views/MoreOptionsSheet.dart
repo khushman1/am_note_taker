@@ -6,7 +6,7 @@ import '../Models/Utility.dart';
 enum moreOptions { delete, share, copy }
 
 class MoreOptionsSheet extends StatefulWidget {
-  final Color? color;
+  final Color color;
   final DateTime? dateLastEdited;
   final void Function(Color)? callBackColorTapped;
 
@@ -14,10 +14,10 @@ class MoreOptionsSheet extends StatefulWidget {
 
   const MoreOptionsSheet(
       {Key? key,
-      this.color,
-      this.dateLastEdited,
-      this.callBackColorTapped,
-      this.callBackOptionTapped})
+      required this.color,
+      required this.dateLastEdited,
+      required this.callBackColorTapped,
+      required this.callBackOptionTapped})
       : super(key: key);
 
   @override
@@ -25,17 +25,18 @@ class MoreOptionsSheet extends StatefulWidget {
 }
 
 class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
-  var note_color;
+  late Color noteColor;
 
   @override
   void initState() {
-    note_color = widget.color;
+    noteColor = widget.color;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: this.note_color,
+      color: noteColor,
       child: Wrap(
         children: <Widget>[
           ListTile(
@@ -67,7 +68,7 @@ class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
               child: ColorSlider(
                 callBackColorTapped: _changeColor,
                 // call callBack from notePage here
-                noteColor: note_color, // take color from local variable
+                noteColor: noteColor, // take color from local variable
               ),
             ),
           ),
@@ -91,7 +92,7 @@ class _MoreOptionsSheetState extends State<MoreOptionsSheet> {
 
   void _changeColor(Color color) {
     setState(() {
-      note_color = color;
+      noteColor = color;
       widget.callBackColorTapped!(color);
     });
   }
