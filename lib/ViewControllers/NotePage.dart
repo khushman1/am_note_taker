@@ -173,6 +173,7 @@ class _NotePageState extends State<NotePage> {
           ),
         ),
       ),
+    /* TODO: Add archiving abilities in the future
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
@@ -185,18 +186,7 @@ class _NotePageState extends State<NotePage> {
           ),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: InkWell(
-          child: GestureDetector(
-            onTap: () => {_saveAndStartNewNote(context)},
-            child: const Icon(
-              Icons.add,
-              color: CentralStation.fontColor,
-            ),
-          ),
-        ),
-      )
+       */
     ];
     return actions;
   }
