@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -60,9 +61,15 @@ class NoteModel extends ChangeNotifier {
   NoteModel(this.id, this._title, this._content, this.dateCreated,
       this._dateLastEdited, this._noteColour, this._parent);
 
-  Map<String, dynamic> toMap(bool forUpdate) {
+  Map<String, dynamic> toMap() {
+    if (id == freshNoteUUID) {
+      id = uuid.v1();
+      if (kDebugMode) {
+        print("Assigned id $id to $this");
+      }
+    }
     var data = {
-      'id': uuid.v1(),
+      'id': id,
       'title': utf8.encode(title),
       'content': utf8.encode(content),
       'date_created': epochFromDate(dateCreated),
@@ -72,9 +79,6 @@ class NoteModel extends ChangeNotifier {
       'parent': parent?.id
       //  for later use for integrating archiving
     };
-    if (forUpdate) {
-      data["id"] = id;
-    }
     return data;
   }
 

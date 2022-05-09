@@ -1,4 +1,5 @@
 import 'package:am_note_taker/Views/NoteTile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '../ViewControllers/NotePage.dart';
@@ -29,7 +30,9 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
   @override
   void noteListener() {
+    if (mounted) {
       setState(() {});
+    }
   }
 
   @override

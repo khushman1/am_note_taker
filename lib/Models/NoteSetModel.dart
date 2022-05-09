@@ -18,9 +18,10 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     retrieveNoteSetFromDatabase();
   }
 
-  void reorderJustModifiedNoteModel(NoteModel note) {
+  void _reorderJustModifiedNoteModel(NoteModel note) {
     if (_allNotesInQueryResult.remove(note)) {
       _allNotesInQueryResult.add(note);
+      notifyListeners();
     }
   }
 
@@ -55,17 +56,37 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
 
   NoteModel addEmptyNoteModel() {
     // Note.freshNoteUUID id indicates the note is not new
-    var emptyNote = NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
-        DateTime.now(), Colors.white, null);
+    var emptyNote = _createNewNoteModel();
     _allNotesInQueryResult.add(emptyNote);
     notifyListeners();
     return emptyNote;
   }
 
+  NoteModel _createNewNoteModel({
+    String title = "",
+    String content = "",
+    Color noteColor = Colors.white,
+    NoteModel? parent
+  }) {
+    var newNote = NoteModel(NoteModel.freshNoteUUID, title, content,
+        DateTime.now(), DateTime.now(), noteColor, parent);
+    newNote.addListener(() {
+      if (kDebugMode) {
+        print("Changed ${newNote.title} ${newNote.content}");
+      }
+      saveNoteModelToDb(newNote);
+      _reorderJustModifiedNoteModel(newNote);
+    });
+    return newNote;
+  }
+
   Future<NoteModel> copyNoteModel(NoteModel sourceNote) async {
-    NoteModel copy = NoteModel(NoteModel.freshNoteUUID, sourceNote.title,
-        sourceNote.content, DateTime.now(), DateTime.now(),
-        sourceNote.noteColour, sourceNote.parent);
+    NoteModel copy = _createNewNoteModel(
+      title: sourceNote.title,
+      content: sourceNote.content,
+      noteColor: sourceNote.noteColour,
+      parent: sourceNote.parent
+    );
     _allNotesInQueryResult.add(copy);
 
     await saveNoteModelToDb(copy);
@@ -74,8 +95,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   }
 
   Future<String> saveNoteModelToDb(NoteModel note) {
-    return noteDB.insertNote(note, note.id == NoteModel.freshNoteUUID)
-        .then((value) => note.id = value);
+    return noteDB.insertNote(note, note.id == NoteModel.freshNoteUUID);
   }
 
   LinkedHashSet<NoteModel> readDatabaseNotes(List<Map<String, dynamic>>? value)
@@ -86,11 +106,6 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
       for (var e in value) {
         NoteModel currentNote = convertMapToNote(e);
         noteSet.add(currentNote);
-        currentNote.addListener(() {
-          saveNoteModelToDb(currentNote);
-          reorderJustModifiedNoteModel(currentNote);
-          notifyListeners();
-        });
         noteIdMap[currentNote.id] = currentNote;
       }
       if (kDebugMode) {
@@ -113,15 +128,17 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   }
 
   NoteModel convertMapToNote(Map<String, dynamic> map) {
-    return NoteModel(
-        map["id"],
-        map["title"] == null ? "" : utf8.decode(map["title"]),
-        map["content"] == null ? "" : utf8.decode(map["content"]),
-        DateTime.fromMillisecondsSinceEpoch(map["date_created"] * 1000),
-        DateTime.fromMillisecondsSinceEpoch(map["date_last_edited"] * 1000),
-        Color(map["note_color"]),
-        null
+    NoteModel note = _createNewNoteModel(
+      title: map["title"] == null ? "" : utf8.decode(map["title"]),
+      content: map["content"] == null ? "" : utf8.decode(map["content"]),
+      noteColor: Color(map["note_color"]),
     );
+    note.id = map["id"];
+    note.dateCreated =
+        DateTime.fromMillisecondsSinceEpoch(map["date_created"] * 1000);
+    note.dateLastEdited =
+        DateTime.fromMillisecondsSinceEpoch(map["date_last_edited"] * 1000);
+    return note;
   }
 
   @override

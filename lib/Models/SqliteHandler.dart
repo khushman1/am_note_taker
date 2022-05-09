@@ -78,29 +78,27 @@ class NotesDBHandler {
     }
 
     // Insert the Notes into the correct table.
-    await db?.insert(
-      'notes',
-      isNew ? note.toMap(false) : note.toMap(true),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await db?.insert('notes', note.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    if (isNew) {
-      // get latest note which isn't archived, limit by 1
-      var one = await db?.query("notes",
-          orderBy: "date_last_edited desc",
-          where: "is_archived = ?",
-          whereArgs: [0],
-          limit: 1);
-      String latestId = one?.first["id"] as String;
-      return latestId;
-    }
+    // if (isNew) {
+    //   // get latest note which isn't archived, limit by 1
+    //   var one = await db?.query("notes",
+    //       orderBy: "date_last_edited desc",
+    //       where: "is_archived = ?",
+    //       whereArgs: [0],
+    //       limit: 1);
+    //   String latestId = one?.first["id"] as String;
+    //   return latestId;
+    // }
     return note.id;
   }
 
   Future<bool> copyNote(NoteModel note) async {
     final Database? db = await database;
     try {
-      await db?.insert("notes", note.toMap(false),
+      await db?.insert("notes", note.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } catch (error) {
       if (kDebugMode) {
@@ -117,7 +115,7 @@ class NotesDBHandler {
 
       String idToUpdate = note.id;
 
-      db?.update("notes", note.toMap(true),
+      db?.update("notes", note.toMap(),
           where: "id = ?", whereArgs: [idToUpdate]);
       return (db != null);
     }
