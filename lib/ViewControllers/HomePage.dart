@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> {
 
   void _toggleViewType() {
     setState(() {
-      CentralStation.updateNeeded = true;
       if (notesViewType == viewType.List) {
         notesViewType = viewType.Staggered;
       } else {

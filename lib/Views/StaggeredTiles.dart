@@ -26,15 +26,17 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
 
   late String title;
 
+  void noteListener() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     _content = widget.note.content;
     _fontSize = _determineFontSizeForContent();
     tileColor = widget.note.noteColour;
     title = widget.note.title;
-    widget.note.addListener(() {
-      setState(() {});
-    });
+    widget.note.addListener(noteListener);
 
     return GestureDetector(
       onTap: () => _noteTapped(context),
@@ -49,6 +51,12 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
         child: constructChild(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    widget.note.removeListener(noteListener);
+    super.dispose();
   }
 
   void _noteTapped(BuildContext ctx) {

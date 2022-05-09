@@ -254,11 +254,7 @@ class _NotePageState extends State<NotePage> {
     switch (tappedOption) {
       case moreOptions.delete:
         {
-          if (_editableNote.id != NoteModel.freshNoteUUID) {
-            _deleteNote(_globalKey.currentContext);
-          } else {
-            _exitWithoutSaving(context);
-          }
+          _deleteNote(_globalKey.currentContext);
           break;
         }
       case moreOptions.share:
@@ -278,7 +274,6 @@ class _NotePageState extends State<NotePage> {
 
   void _deleteNote(BuildContext? context) {
     if (context == null) return;
-    if (_editableNote.id != NoteModel.freshNoteUUID) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -301,7 +296,6 @@ class _NotePageState extends State<NotePage> {
               ],
             );
           });
-    }
   }
 
   void _changeColor(Color newColorSelected) {
@@ -329,57 +323,60 @@ class _NotePageState extends State<NotePage> {
     return true;
   }
 
-  void _archivePopup(BuildContext context) {
-    if (_editableNote.id != NoteModel.freshNoteUUID) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Confirm ?"),
-              content: const Text("This note will be archived"),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => _archiveThisNote(context),
-                    child: const Text("Yes")),
-                TextButton(
-                    onPressed: () => {Navigator.of(context).pop()},
-                    child: const Text("No"))
-              ],
-            );
-          });
-    } else {
-      _exitWithoutSaving(context);
-    }
-  }
+  // void _archivePopup(BuildContext context) {
+  //   if (_editableNote.id != NoteModel.freshNoteUUID) {
+  //     showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return AlertDialog(
+  //             title: const Text("Confirm ?"),
+  //             content: const Text("This note will be archived"),
+  //             actions: <Widget>[
+  //               TextButton(
+  //                   onPressed: () => _archiveThisNote(context),
+  //                   child: const Text("Yes")),
+  //               TextButton(
+  //                   onPressed: () => {Navigator.of(context).pop()},
+  //                   child: const Text("No"))
+  //             ],
+  //           );
+  //         });
+  //   } else {
+  //     _exitWithoutSaving(context);
+  //   }
+  // }
 
   void _exitWithoutSaving(BuildContext context) {
     _persistenceTimer?.cancel();
     Navigator.of(context).pop();
   }
 
-  void _archiveThisNote(BuildContext context) {
-    Navigator.of(context).pop();
-    // set archived flag to true and send the entire note object in the database to be updated
-    _editableNote.isArchived = 1;
-    var noteDB = NotesDBHandler();
-    noteDB.archiveNote(_editableNote);
-    // update will be required to remove the archived note from the staggered view
-    CentralStation.updateNeeded = true;
-    _persistenceTimer?.cancel(); // shutdown the timer
-
-    Navigator.of(context).pop(); // pop back to staggered view
-    // TODO: OPTIONAL show the toast of deletion completion
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("deleted")));
-  }
+  // void _archiveThisNote(BuildContext context) {
+  //   Navigator.of(context).pop();
+  //   // set archived flag to true and send the entire note object in the database to be updated
+  //   _editableNote.isArchived = 1;
+  //   var noteDB = NotesDBHandler();
+  //   noteDB.archiveNote(_editableNote);
+  //   // update will be required to remove the archived note from the staggered view
+  //   CentralStation.updateNeeded = true;
+  //   _persistenceTimer?.cancel(); // shutdown the timer
+  //
+  //   Navigator.of(context).pop(); // pop back to staggered view
+  //   // TODO: OPTIONAL show the toast of deletion completion
+  //
+  //   ScaffoldMessenger.of(context)
+  //       .showSnackBar(const SnackBar(content: Text("deleted")));
+  // }
 
   void _copy(BuildContext context) {
-    NoteModel copy = Provider.of<NoteSetModel>(context)
-        .copyNoteModel(_editableNote);
+    _persistenceTimer?.cancel();
     Navigator.of(context).pop();
+    NoteModel copy = Provider.of<NoteSetModel>(context, listen: false)
+        .copyNoteModel(_editableNote);
     Navigator.push(context,
         MaterialPageRoute(builder: (ctx) => NotePage(copy)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Note copied.")));
 
     // var status = noteDB.copyNote(copy);
     // status.then((querySuccess) {

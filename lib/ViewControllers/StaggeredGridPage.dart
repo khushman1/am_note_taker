@@ -40,8 +40,8 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     GlobalKey _stagKey = GlobalKey();
 
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
-      var gridViewChildren = noteSetModel.noteSet.map((e) => _tileGenerator(e))
-          .toList();
+      var gridViewChildren = noteSetModel.notesList.reversed
+          .map((e) => _tileGenerator(e)).toList();
       return Padding(
         padding: _paddingForView(context),
         child: StaggeredGridView.count(

@@ -26,21 +26,29 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
 
   bool expanded = false;
 
+  void noteListener() {
+      setState(() {});
+  }
   @override
   Widget build(BuildContext context) {
     _content = widget.note.content;
     _fontSize = _determineFontSizeForContent();
     tileColor = widget.note.noteColour;
     title = widget.note.title;
-    widget.note.addListener(() {
-      setState(() {});
-    });
+    widget.note.addListener(noteListener);
 
     return Card(
       child: constructChild(),
       color: tileColor,
       shadowColor: tileColor,
     );
+  }
+
+  @override
+  void dispose() {
+    widget.note.removeListener(noteListener);
+    super.dispose();
+
   }
 
   void _noteOpened(BuildContext ctx) {

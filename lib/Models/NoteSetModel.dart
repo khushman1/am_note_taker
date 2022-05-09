@@ -36,9 +36,14 @@ class NoteSetModel extends ChangeNotifier {
   }
 
   void deleteNoteModel(NoteModel noteToDelete) {
-    noteDB.deleteNote(noteToDelete);
+    // Remove tree references before deleting
+    for (NoteModel child in noteToDelete.children) {
+      child.parent = null;
+    }
+    noteToDelete.parent?.children.remove(noteToDelete);
+
     _allNotesInQueryResult.remove(noteToDelete);
-    notifyListeners();
+    noteDB.deleteNote(noteToDelete).then((value) => notifyListeners());
   }
 
   NoteModel addEmptyNoteModel() {
@@ -50,17 +55,13 @@ class NoteSetModel extends ChangeNotifier {
     return emptyNote;
   }
 
-  NoteModel copyNoteModel(NoteModel _editableNote) {
-    NoteModel copy = NoteModel(NoteModel.freshNoteUUID, _editableNote.title,
-        _editableNote.content, DateTime.now(), DateTime.now(),
-        _editableNote.noteColour, _editableNote.parent);
+  NoteModel copyNoteModel(NoteModel sourceNote) {
+    NoteModel copy = NoteModel(NoteModel.freshNoteUUID, sourceNote.title,
+        sourceNote.content, DateTime.now(), DateTime.now(),
+        sourceNote.noteColour, sourceNote.parent);
 
-    var status = noteDB.copyNote(copy);
-    status.then((querySuccess) {
-      if (querySuccess) {
-        notifyListeners();
-      }
-    });
+    saveNoteModelToDb(copy);
+    notifyListeners();
     return copy;
   }
 
@@ -77,6 +78,9 @@ class NoteSetModel extends ChangeNotifier {
       for (var e in value) {
         NoteModel currentNote = convertMapToNote(e);
         noteSet.add(currentNote);
+        currentNote.addListener(() {
+          saveNoteModelToDb(currentNote);
+        });
         noteIdMap[currentNote.id] = currentNote;
       }
       if (kDebugMode) {

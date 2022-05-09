@@ -144,7 +144,7 @@ class NotesDBHandler {
     final Database? db = await database;
     // query all the notes sorted by last edited
     var data = await db?.query("notes",
-        orderBy: "date_last_edited desc",
+        orderBy: "date_last_edited asc",
         where: "is_archived = ?",
         whereArgs: [0]);
 
