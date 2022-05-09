@@ -68,7 +68,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       child: AutoSizeText(
         _content,
         style: TextStyle(fontSize: _fontSize, color: Colors.black54),
-        maxLines: 2,
+        maxLines: widget.note.title.isEmpty ? 3 : 3,
         textScaleFactor: 1.5,
         overflow: TextOverflow.ellipsis,
       ),
@@ -95,19 +95,16 @@ class _ListExpansionTileState extends State<ListExpansionTile>
           title,
           style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
           maxLines: widget.note.title.isEmpty ? 1 : 3,
-          textScaleFactor: 1.5,
+          textScaleFactor: 1.6,
           overflow: TextOverflow.ellipsis,
       );
       childrenWidgets.add(contentWidget);
-      return ExpansionTile(
-        title: titleWidget,
-        children: childrenWidgets,
-        textColor: Colors.black,
-      );
     }
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: titleWidget,
+    childrenWidgets.add(_childrenPanel());
+    return ExpansionTile(
+      title: titleWidget,
+      children: childrenWidgets,
+      textColor: Colors.black,
     );
   }
 
