@@ -15,7 +15,8 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   _ListExpansionTileState createState() => _ListExpansionTileState();
 }
 
-class _ListExpansionTileState extends State<ListExpansionTile> {
+class _ListExpansionTileState extends State<ListExpansionTile>
+    implements NoteListener {
   late String _content;
 
   late double _fontSize;
@@ -26,9 +27,11 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
 
   bool expanded = false;
 
+  @override
   void noteListener() {
       setState(() {});
   }
+
   @override
   Widget build(BuildContext context) {
     _content = widget.note.content;
@@ -64,7 +67,7 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
       onTap: () => _noteOpened(context),
       child: AutoSizeText(
         _content,
-        style: TextStyle(fontSize: _fontSize),
+        style: TextStyle(fontSize: _fontSize, color: Colors.black54),
         maxLines: 2,
         textScaleFactor: 1.5,
         overflow: TextOverflow.ellipsis,
@@ -99,7 +102,7 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
       return ExpansionTile(
         title: titleWidget,
         children: childrenWidgets,
-        textColor: Colors.black54,
+        textColor: Colors.black,
       );
     }
     return Padding(

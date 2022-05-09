@@ -1,13 +1,14 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'NoteModel.dart';
 import 'SqliteHandler.dart';
 
-class NoteSetModel extends ChangeNotifier {
+class NoteSetModel extends ChangeNotifier implements NoteListener {
   NotesDBHandler noteDB = NotesDBHandler();
   LinkedHashSet<NoteModel> _allNotesInQueryResult = LinkedHashSet();
   LinkedHashSet<NoteModel> get noteSet => _allNotesInQueryResult;
@@ -118,5 +119,10 @@ class NoteSetModel extends ChangeNotifier {
         Color(map["note_color"]),
         null
     );
+  }
+
+  @override
+  void noteListener() {
+    // This is a stub class because this class reads note listeners directly
   }
 }

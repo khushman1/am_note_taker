@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,7 @@ class NotePage extends StatefulWidget {
   _NotePageState createState() => _NotePageState();
 }
 
-class _NotePageState extends State<NotePage> {
+class _NotePageState extends State<NotePage> implements NoteListener {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   late Color noteColor;
@@ -61,6 +62,7 @@ class _NotePageState extends State<NotePage> {
     });
   }
 
+  @override
   void noteListener() {
     if (mounted) {
       setState(() {});

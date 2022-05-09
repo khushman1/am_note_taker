@@ -5,3 +5,7 @@ import '../Models/NoteModel.dart';
 abstract class NoteTile implements StatefulWidget{
   abstract final NoteModel note;
 }
+
+abstract class NoteListener {
+  void noteListener();
+}

@@ -16,7 +16,8 @@ class MyStaggeredTile extends StatefulWidget implements NoteTile {
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
 }
 
-class _MyStaggeredTileState extends State<MyStaggeredTile> {
+class _MyStaggeredTileState extends State<MyStaggeredTile>
+    implements NoteListener {
 
   late String _content;
 
@@ -26,6 +27,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
 
   late String title;
 
+  @override
   void noteListener() {
     setState(() {});
   }

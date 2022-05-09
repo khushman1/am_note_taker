@@ -81,7 +81,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
       padding = 8;
     }
     return EdgeInsets.only(
-        left: padding, right: padding, top: topBottom, bottom: topBottom);
+        left: padding, right: padding, top: topBottom, bottom: topBottom * 7);
   }
 
   NoteTile _tileGenerator(NoteModel currentNote) {
