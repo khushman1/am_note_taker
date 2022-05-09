@@ -91,12 +91,16 @@ class _ListExpansionTileState extends State<ListExpansionTile>
         ),
       );
 
-      titleWidget = AutoSizeText(
-          title,
-          style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
-          maxLines: widget.note.title.isEmpty ? 1 : 3,
-          textScaleFactor: 1.6,
-          overflow: TextOverflow.ellipsis,
+      titleWidget = InkWell(
+          splashColor: ColorUtils.invert(widget.note.noteColour).withAlpha(30),
+          onTap: () => _noteOpened(context),
+          child: AutoSizeText(
+            title,
+            style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
+            maxLines: widget.note.title.isEmpty ? 1 : 3,
+            textScaleFactor: 1.6,
+            overflow: TextOverflow.ellipsis,
+          ),
       );
       childrenWidgets.add(contentWidget);
     }
@@ -106,6 +110,10 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       children: childrenWidgets,
       textColor: Colors.black,
     );
+  }
+
+  Widget _childrenPanel() {
+    return Text(widget.note.children.toString());
   }
 
   double _determineFontSizeForContent() {

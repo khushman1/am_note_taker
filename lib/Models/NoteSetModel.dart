@@ -18,8 +18,10 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     retrieveNoteSetFromDatabase();
   }
 
-  void sortAllNotesByTimeModified() {
-    _allNotesInQueryResult.toList().sort((a, b) => a.dateLastEdited.compareTo(b.dateLastEdited));
+  void reorderJustModifiedNoteModel(NoteModel note) {
+    if (_allNotesInQueryResult.remove(note)) {
+      _allNotesInQueryResult.add(note);
+    }
   }
 
   void retrieveNoteSetFromDatabase() {
@@ -86,7 +88,8 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         noteSet.add(currentNote);
         currentNote.addListener(() {
           saveNoteModelToDb(currentNote);
-          sortAllNotesByTimeModified();
+          reorderJustModifiedNoteModel(currentNote);
+          notifyListeners();
         });
         noteIdMap[currentNote.id] = currentNote;
       }
