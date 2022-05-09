@@ -40,8 +40,6 @@ class _ColorSliderState extends State<ColorSlider> {
     indexOfCurrentColor = colors.indexOf(noteColor);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
 

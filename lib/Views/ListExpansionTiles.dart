@@ -9,11 +9,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
 
-  @override
-  final void Function() refreshTriggeredCallback;
-
-  const ListExpansionTile(this.note, this.refreshTriggeredCallback,
-      {Key? key}) : super(key: key);
+  const ListExpansionTile(this.note, {Key? key}) : super(key: key);
 
   @override
   _ListExpansionTileState createState() => _ListExpansionTileState();
@@ -36,6 +32,9 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
     _fontSize = _determineFontSizeForContent();
     tileColor = widget.note.noteColour;
     title = widget.note.title;
+    widget.note.addListener(() {
+      setState(() {});
+    });
 
     return Card(
       child: constructChild(),
@@ -45,17 +44,8 @@ class _ListExpansionTileState extends State<ListExpansionTile> {
   }
 
   void _noteOpened(BuildContext ctx) {
-    CentralStation.updateNeeded = false;
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)))
-            .then((value) => _refreshIfNeeded());
-  }
-
-  void _refreshIfNeeded() {
-    if (CentralStation.updateNeeded && mounted) {
-      widget.refreshTriggeredCallback();
-      setState(() {});
-    }
+        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)));
   }
 
   Widget constructChild() {

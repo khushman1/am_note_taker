@@ -1,6 +1,8 @@
+import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'StaggeredGridPage.dart';
 import '../Models/NoteModel.dart';
 import 'NotePage.dart';
@@ -72,12 +74,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _newNoteTapped(BuildContext ctx) {
-    // Note.freshNoteUUID id indicates the note is not new
-    var emptyNote = NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
-        DateTime.now(), Colors.white, null);
+    var emptyNote =
+        Provider.of<NoteSetModel>(ctx, listen: false).addEmptyNoteModel();
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)))
-            .then((value) => setState(() {}));
+        ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
   }
 
   void _toggleViewType() {

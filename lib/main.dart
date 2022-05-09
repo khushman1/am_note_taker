@@ -1,8 +1,14 @@
+import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'Models/NoteModel.dart';
 import 'ViewControllers/HomePage.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => NoteSetModel(),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

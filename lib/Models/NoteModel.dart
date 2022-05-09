@@ -3,26 +3,66 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-class NoteModel {
+class NoteModel extends ChangeNotifier {
   static const String freshNoteUUID = "__freshnote__";
   Uuid uuid = const Uuid();
 
   String id;
-  String title;
-  String content;
-  DateTime dateCreated;
-  DateTime dateLastEdited;
-  Color noteColour;
-  int isArchived = 0;
-  NoteModel? parent;
-  HashSet<NoteModel> children = HashSet();
+  String _title;
+  String get title => _title;
+  set title(String newTitle) {
+    if (newTitle != _title) {
+      _title = newTitle;
+      dateLastEdited = DateTime.now();
+    }
+  }
 
-  NoteModel(this.id, this.title, this.content, this.dateCreated, this.dateLastEdited,
-      this.noteColour, this.parent);
+  String _content;
+  String get content => _content;
+  set content(String newContent) {
+    if (newContent != _content) {
+      _content = newContent;
+      dateLastEdited = DateTime.now();
+    }
+  }
+
+  DateTime dateCreated;
+
+  DateTime _dateLastEdited;
+  DateTime get dateLastEdited => _dateLastEdited;
+  set dateLastEdited(DateTime modified) {
+    _dateLastEdited = modified;
+    notifyListeners();
+  }
+
+  Color _noteColour;
+  Color get noteColour => _noteColour;
+  set noteColour(Color newColor) {
+    if (newColor != _noteColour) {
+      _noteColour = newColor;
+      dateLastEdited = DateTime.now();
+    }
+  }
+
+  int isArchived = 0;
+
+  NoteModel? _parent;
+  NoteModel? get parent => _parent;
+  set parent(NoteModel? newParent) {
+    if (_parent != newParent) {
+      _parent = newParent;
+      dateLastEdited = DateTime.now();
+    }
+  }
+
+  LinkedHashSet<NoteModel> children = LinkedHashSet();
+
+  NoteModel(this.id, this._title, this._content, this.dateCreated,
+      this._dateLastEdited, this._noteColour, this._parent);
 
   Map<String, dynamic> toMap(bool forUpdate) {
     var data = {
-      'id': uuid.v1(), //  since id is auto incremented in the database we don't need to send it to the insert query.
+      'id': uuid.v1(),
       'title': utf8.encode(title),
       'content': utf8.encode(content),
       'date_created': epochFromDate(dateCreated),
@@ -60,5 +100,10 @@ class NoteModel {
       'is_archived': isArchived,
       'parent': parent?.id
     }.toString();
+  }
+
+  bool isEmpty() {
+    return (id == NoteModel.freshNoteUUID && _title.isEmpty && _content.isEmpty
+        && noteColour == Colors.white && isArchived == 0 && parent == null);
   }
 }

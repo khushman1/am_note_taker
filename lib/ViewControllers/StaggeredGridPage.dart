@@ -1,13 +1,12 @@
-import 'dart:collection';
-import 'dart:convert';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
-import '../Models/SqliteHandler.dart';
-import '../Models/Utility.dart';
+import '../Models/NoteSetModel.dart';
 import '../Views/StaggeredTiles.dart';
 import 'HomePage.dart';
 
@@ -22,8 +21,6 @@ class StaggeredGridPage extends StatefulWidget {
 }
 
 class _StaggeredGridPageState extends State<StaggeredGridPage> {
-  var noteDB = NotesDBHandler();
-  late LinkedHashSet<NoteModel> _allNotesInQueryResult = LinkedHashSet();
   late viewType notesViewType;
 
   @override
@@ -38,34 +35,25 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     notesViewType = widget.notesViewType;
   }
 
-  void _refreshTriggered() {
-    retrieveAllNotesFromDatabase();
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     GlobalKey _stagKey = GlobalKey();
 
-    if (kDebugMode) {
-      print("update needed?: ${CentralStation.updateNeeded}");
-    }
-    if (CentralStation.updateNeeded) {
-      retrieveAllNotesFromDatabase();
-    }
-    return Padding(
-      padding: _paddingForView(context),
-      child: StaggeredGridView.count(
-        key: _stagKey,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 2,
-        crossAxisCount: _colForStaggeredView(context),
-        children: List.generate(_allNotesInQueryResult.length, (i) {
-          return _tileGenerator(i);
-        }),
-        staggeredTiles: _tilesForView(),
-      ),
-    );
+    return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
+      var gridViewChildren = noteSetModel.noteSet.map((e) => _tileGenerator(e))
+          .toList();
+      return Padding(
+        padding: _paddingForView(context),
+        child: StaggeredGridView.count(
+          key: _stagKey,
+          crossAxisSpacing: 4,
+          mainAxisSpacing: 2,
+          crossAxisCount: _colForStaggeredView(context),
+          children: gridViewChildren,
+          staggeredTiles: _tilesForView(noteSetModel.noteSet.length),
+        ),
+      );
+    });
   }
 
   int _colForStaggeredView(BuildContext context) {
@@ -76,9 +64,9 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     return MediaQuery.of(context).size.width > 600 ? 3 : 2;
   }
 
-  List<StaggeredTile> _tilesForView() {
+  List<StaggeredTile> _tilesForView(int length) {
     // Generate staggered tiles for the view based on the current preference.
-    return List.generate(_allNotesInQueryResult.length, (index) {
+    return List.generate(length, (index) {
       return const StaggeredTile.fit(1);
     });
   }
@@ -96,79 +84,15 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
         left: padding, right: padding, top: topBottom, bottom: topBottom);
   }
 
-  NoteTile _tileGenerator(int i) {
-    NoteModel currentNote = _allNotesInQueryResult.elementAt(i);
+  NoteTile _tileGenerator(NoteModel currentNote) {
     if (kDebugMode) {
-      print("Generating $i tile");
+      print("Generating $currentNote tile");
     }
 
     if (widget.notesViewType == viewType.Staggered) {
-      return MyStaggeredTile(currentNote, _refreshTriggered,
-          widget.notesViewType != viewType.List);
+      return MyStaggeredTile(currentNote);
     } else {
-      return ListExpansionTile(currentNote, _refreshTriggered);
+      return ListExpansionTile(currentNote);
     }
-  }
-
-  void retrieveAllNotesFromDatabase() {
-    if (kDebugMode) {
-      print("Retrieving all notes from db.");
-    }
-    // queries for all the notes from the database ordered by latest edited note. excludes archived notes.
-    var _testData = noteDB.selectAllNotes();
-    _testData.then((value) {
-      if (kDebugMode) {
-        int? count = value?.length;
-        print("Retrieved $count notes from db.");
-      }
-      if (value != null) {
-        LinkedHashSet<NoteModel> noteSet = readDatabaseNotes(value);
-        setState(() {
-          _allNotesInQueryResult = noteSet;
-          CentralStation.updateNeeded = false;
-        });
-      }
-    });
-  }
-
-  LinkedHashSet<NoteModel> readDatabaseNotes(List<Map<String, dynamic>>? value)
-  {
-    HashMap<String, NoteModel> noteIdMap = HashMap();
-    LinkedHashSet<NoteModel> noteSet = LinkedHashSet();
-    if (value != null) {
-      for (var e in value) {
-        NoteModel currentNote = convertMapToNote(e);
-        noteSet.add(currentNote);
-        noteIdMap[currentNote.id] = currentNote;
-      }
-      if (kDebugMode) {
-        print("Values loaded successfully. $noteSet");
-      }
-
-      // Fill in parent and children references
-      for (var e in value) {
-        NoteModel? currentNote = noteIdMap[e["id"]];
-        if (currentNote != null) {
-          currentNote.parent = noteIdMap[e["parent"]];
-          currentNote.parent?.children.add(currentNote);
-        }
-      }
-      if (kDebugMode) {
-        print("Values referenced successfully.");
-      }
-    }
-    return noteSet;
-  }
-
-  NoteModel convertMapToNote(Map<String, dynamic> map) {
-    return NoteModel(
-      map["id"],
-      map["title"] == null ? "" : utf8.decode(map["title"]),
-      map["content"] == null ? "" : utf8.decode(map["content"]),
-      DateTime.fromMillisecondsSinceEpoch(map["date_created"] * 1000),
-      DateTime.fromMillisecondsSinceEpoch(map["date_last_edited"] * 1000),
-      Color(map["note_color"]),
-      null
-    );
   }
 }

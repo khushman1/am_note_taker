@@ -8,12 +8,9 @@ import '../Models/Utility.dart';
 class MyStaggeredTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
-  @override
-  final void Function() refreshTriggeredCallback;
-  final bool showContent;
+  final bool showContent = true;
 
-  const MyStaggeredTile(this.note, this.refreshTriggeredCallback,
-      this.showContent);
+  const MyStaggeredTile(this.note);
 
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
@@ -35,6 +32,9 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
     _fontSize = _determineFontSizeForContent();
     tileColor = widget.note.noteColour;
     title = widget.note.title;
+    widget.note.addListener(() {
+      setState(() {});
+    });
 
     return GestureDetector(
       onTap: () => _noteTapped(context),
@@ -54,15 +54,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile> {
   void _noteTapped(BuildContext ctx) {
     CentralStation.updateNeeded = false;
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)))
-            .then((value) => _refreshIfNeeded());
-  }
-
-  void _refreshIfNeeded() {
-    if (CentralStation.updateNeeded && mounted) {
-      widget.refreshTriggeredCallback();
-      setState(() {});
-    }
+        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)));
   }
 
   Widget constructChild() {

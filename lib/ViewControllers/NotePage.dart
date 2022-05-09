@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
+import '../Models/NoteSetModel.dart';
 import '../Models/SqliteHandler.dart';
 import 'dart:async';
 import '../Models/Utility.dart';
@@ -21,7 +23,6 @@ class _NotePageState extends State<NotePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   late Color noteColor;
-  bool _isNewNote = false;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
 
@@ -50,9 +51,6 @@ class _NotePageState extends State<NotePage> {
     _contentFromInitial = widget.noteInEditing.content;
     _colorFromInitial = widget.noteInEditing.noteColour;
 
-    if (widget.noteInEditing.id == NoteModel.freshNoteUUID) {
-      _isNewNote = true;
-    }
     _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       // call insert query here
       if (kDebugMode) {
@@ -65,7 +63,8 @@ class _NotePageState extends State<NotePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty) {
+    if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty
+        && _editableNote.content.isEmpty) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
 
@@ -77,7 +76,7 @@ class _NotePageState extends State<NotePage> {
           leading: const BackButton(
             color: Colors.black,
           ),
-          actions: _archiveAction(context),
+          actions: _notePageActions(context),
           elevation: 1,
           backgroundColor: noteColor,
           title: _pageTitle(),
@@ -144,7 +143,7 @@ class _NotePageState extends State<NotePage> {
     return Text(_editableNote.id == NoteModel.freshNoteUUID ? "New Note" : "Edit Note");
   }
 
-  List<Widget> _archiveAction(BuildContext context) {
+  List<Widget> _notePageActions(BuildContext context) {
     List<Widget> actions = [];
     if (widget.noteInEditing.id != NoteModel.freshNoteUUID) {
       actions.add(Padding(
@@ -161,19 +160,18 @@ class _NotePageState extends State<NotePage> {
       ));
     }
     actions += [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: InkWell(
-          child: GestureDetector(
-            onTap: () => _archivePopup(context),
-            child: const Icon(
-              Icons.archive,
-              color: CentralStation.fontColor,
-            ),
-          ),
-        ),
-      ),
-    /* TODO: Add archiving abilities in the future
+      // Padding(
+      //   padding: const EdgeInsets.symmetric(horizontal: 12),
+      //   child: InkWell(
+      //     child: GestureDetector(
+      //       onTap: () => _archivePopup(context),
+      //       child: const Icon(
+      //         Icons.archive,
+      //         color: CentralStation.fontColor,
+      //       ),
+      //     ),
+      //   ),
+      // ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
@@ -186,7 +184,6 @@ class _NotePageState extends State<NotePage> {
           ),
         ),
       ),
-       */
     ];
     return actions;
   }
@@ -207,10 +204,8 @@ class _NotePageState extends State<NotePage> {
   void _persistData() {
     updateNoteObject();
 
-    var noteDB = NotesDBHandler();
-
-    noteDB.insertNote(_editableNote, _editableNote.id == NoteModel.freshNoteUUID)
-        .then((value) => _editableNote.id = value);
+    // Provider.of<NoteSetModel>(context, listen: false)
+    //     .saveNoteModelToDb(_editableNote);
     // if (_editableNote.id == Note.freshNoteUUID) {
     //   noteDB.insertNote(_editableNote, true);
     //   Future<String> autoIncrementedId =
@@ -235,21 +230,21 @@ class _NotePageState extends State<NotePage> {
       print(widget.noteInEditing);
       print(_editableNote);
 
-      print("same title? ${_editableNote.title == _titleFromInitial}");
-      print("same content? ${_editableNote.content == _contentFromInitial}");
+      // print("same title? ${_editableNote.title == _titleFromInitial}");
+      // print("same content? ${_editableNote.content == _contentFromInitial}");
     }
 
-    if (!(_editableNote.title == _titleFromInitial &&
-        _editableNote.content == _contentFromInitial) ||
-        (_isNewNote)) {
-      // No changes to the note
-      // Change last edit time only if the content of the note is mutated in compare to the note which the page was called with.
-      _editableNote.dateLastEdited = DateTime.now();
-      if (kDebugMode) {
-        print("Updating date_last_edited");
-      }
-      CentralStation.updateNeeded = true;
-    }
+    // if (!(_editableNote.title == _titleFromInitial &&
+    //     _editableNote.content == _contentFromInitial) ||
+    //     (_editableNote.id == NoteModel.freshNoteUUID)) {
+    //   // No changes to the note
+    //   // Change last edit time only if the content of the note is mutated in compare to the note which the page was called with.
+    //   _editableNote.dateLastEdited = DateTime.now();
+    //   if (kDebugMode) {
+    //     print("Updating date_last_edited");
+    //   }
+    //   CentralStation.updateNeeded = true;
+    // }
   }
 
   void bottomSheetOptionTappedHandler(moreOptions tappedOption) {
@@ -275,7 +270,7 @@ class _NotePageState extends State<NotePage> {
         }
       case moreOptions.copy:
         {
-          _copy();
+          _copy(context);
           break;
         }
     }
@@ -294,11 +289,9 @@ class _NotePageState extends State<NotePage> {
                 TextButton(
                     onPressed: () {
                       _persistenceTimer?.cancel();
-                      var noteDB = NotesDBHandler();
                       Navigator.of(context).pop();
-                      noteDB.deleteNote(_editableNote);
-                      CentralStation.updateNeeded = true;
-
+                      Provider.of<NoteSetModel>(context, listen: false)
+                          .deleteNoteModel(_editableNote);
                       Navigator.of(context).pop();
                     },
                     child: const Text("Yes")),
@@ -315,28 +308,14 @@ class _NotePageState extends State<NotePage> {
     if (kDebugMode) {
       print("note color changed");
     }
-    setState(() {
-      noteColor = newColorSelected;
-      _editableNote.noteColour = newColorSelected;
-    });
+    noteColor = newColorSelected;
     updateNoteObject();
-    _persistColorChange();
-    CentralStation.updateNeeded = true;
-  }
-
-  void _persistColorChange() {
-    if (_editableNote.id != NoteModel.freshNoteUUID) {
-      var noteDB = NotesDBHandler();
-      _editableNote.noteColour = noteColor;
-      noteDB.insertNote(_editableNote, false);
-    }
   }
 
   void _saveAndStartNewNote(BuildContext context) {
     _persistenceTimer?.cancel();
     var emptyNote =
-        NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(), DateTime.now(),
-            Colors.white, null);
+        Provider.of<NoteSetModel>(context, listen: false).addEmptyNoteModel();
     Navigator.of(context).pop();
     Navigator.push(
         context, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
@@ -375,7 +354,6 @@ class _NotePageState extends State<NotePage> {
 
   void _exitWithoutSaving(BuildContext context) {
     _persistenceTimer?.cancel();
-    CentralStation.updateNeeded = false;
     Navigator.of(context).pop();
   }
 
@@ -396,19 +374,20 @@ class _NotePageState extends State<NotePage> {
         .showSnackBar(const SnackBar(content: Text("deleted")));
   }
 
-  void _copy() {
-    var noteDB = NotesDBHandler();
-    NoteModel copy = NoteModel(NoteModel.freshNoteUUID, _editableNote.title, _editableNote.content,
-        DateTime.now(), DateTime.now(), _editableNote.noteColour,
-        _editableNote.parent);
+  void _copy(BuildContext context) {
+    NoteModel copy = Provider.of<NoteSetModel>(context)
+        .copyNoteModel(_editableNote);
+    Navigator.of(context).pop();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (ctx) => NotePage(copy)));
 
-    var status = noteDB.copyNote(copy);
-    status.then((querySuccess) {
-      if (querySuccess) {
-        CentralStation.updateNeeded = true;
-        Navigator.of(_globalKey.currentContext!).pop();
-      }
-    });
+    // var status = noteDB.copyNote(copy);
+    // status.then((querySuccess) {
+    //   if (querySuccess) {
+    //     CentralStation.updateNeeded = true;
+    //     Navigator.of(_globalKey.currentContext!).pop();
+    //   }
+    // });
   }
 
   void _undo() {
