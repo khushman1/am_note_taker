@@ -61,12 +61,19 @@ class _NotePageState extends State<NotePage> {
     });
   }
 
+  void noteListener() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty
         && _editableNote.content.isEmpty) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
+    _editableNote.addListener(noteListener);
 
     return WillPopScope(
       child: Scaffold(
@@ -85,6 +92,12 @@ class _NotePageState extends State<NotePage> {
       ),
       onWillPop: _readyToPop,
     );
+  }
+
+  @override
+  void dispose() {
+    _editableNote.removeListener(noteListener);
+    super.dispose();
   }
 
   Widget _body(BuildContext ctx) {
