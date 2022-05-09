@@ -17,6 +17,10 @@ class NoteSetModel extends ChangeNotifier {
     retrieveNoteSetFromDatabase();
   }
 
+  void sortAllNotesByTimeModified() {
+    _allNotesInQueryResult.toList().sort((a, b) => a.dateLastEdited.compareTo(b.dateLastEdited));
+  }
+
   void retrieveNoteSetFromDatabase() {
     if (kDebugMode) {
       print("Retrieving all notes from db.");
@@ -55,18 +59,19 @@ class NoteSetModel extends ChangeNotifier {
     return emptyNote;
   }
 
-  NoteModel copyNoteModel(NoteModel sourceNote) {
+  Future<NoteModel> copyNoteModel(NoteModel sourceNote) async {
     NoteModel copy = NoteModel(NoteModel.freshNoteUUID, sourceNote.title,
         sourceNote.content, DateTime.now(), DateTime.now(),
         sourceNote.noteColour, sourceNote.parent);
+    _allNotesInQueryResult.add(copy);
 
-    saveNoteModelToDb(copy);
+    await saveNoteModelToDb(copy);
     notifyListeners();
     return copy;
   }
 
-  void saveNoteModelToDb(NoteModel note) {
-    noteDB.insertNote(note, note.id == NoteModel.freshNoteUUID)
+  Future<String> saveNoteModelToDb(NoteModel note) {
+    return noteDB.insertNote(note, note.id == NoteModel.freshNoteUUID)
         .then((value) => note.id = value);
   }
 
@@ -80,6 +85,7 @@ class NoteSetModel extends ChangeNotifier {
         noteSet.add(currentNote);
         currentNote.addListener(() {
           saveNoteModelToDb(currentNote);
+          sortAllNotesByTimeModified();
         });
         noteIdMap[currentNote.id] = currentNote;
       }

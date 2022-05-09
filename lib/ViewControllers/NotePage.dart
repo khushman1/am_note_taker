@@ -371,12 +371,13 @@ class _NotePageState extends State<NotePage> {
   void _copy(BuildContext context) {
     _persistenceTimer?.cancel();
     Navigator.of(context).pop();
-    NoteModel copy = Provider.of<NoteSetModel>(context, listen: false)
-        .copyNoteModel(_editableNote);
-    Navigator.push(context,
-        MaterialPageRoute(builder: (ctx) => NotePage(copy)));
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Note copied.")));
+    Provider.of<NoteSetModel>(context, listen: false)
+        .copyNoteModel(_editableNote).then((value) {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (ctx) => NotePage(value)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Note copied.")));
+    });
 
     // var status = noteDB.copyNote(copy);
     // status.then((querySuccess) {
