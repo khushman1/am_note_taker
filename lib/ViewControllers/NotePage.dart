@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Views/NoteSearchDialog.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   DateTime _lastEditedForUndo = DateTime.now();
 
   late NoteModel _editableNote;
+
+  bool _showingBottomSheet = false;
+  bool _showingNoteSearchDialog = false;
 
   // the timer variable responsible to call persistData function every 5 seconds and cancel the timer when the page pops.
   Timer? _persistenceTimer;
@@ -72,7 +76,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   @override
   Widget build(BuildContext context) {
     if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty
-        && _editableNote.content.isEmpty) {
+        && _editableNote.content.isEmpty
+        && !_showingBottomSheet && !_showingNoteSearchDialog) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
     _editableNote.addListener(noteListener);
@@ -103,6 +108,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   Widget _body(BuildContext ctx) {
+    var parentController = TextEditingController();
+    var messageController = TextEditingController();
+    NoteModel note = CentralStation.createEmptyNoteModel();
+    note.title = "Check title";
+    parentController.text = (widget.noteInEditing != null &&
+        widget.noteInEditing.parent != null)
+        ? "Choose parent"
+        : "Parent: ${widget.noteInEditing.parent?.title}";
     return Container(
         color: noteColor,
         padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
@@ -110,21 +123,46 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              InkWell(
+                onTap: () => _showNoteSearchDialog(context),
+                child: TextField(
+                  enabled: false,
+                  controller: parentController,
+                  decoration: InputDecoration(
+                    hintText: "Parent information",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(color: Colors.blue, width: 5)
+                    ),
+                    contentPadding: const EdgeInsets.all(8),
+                    isCollapsed: true,
+                    filled: true,
+                    fillColor: Colors.blueAccent,
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.all(5),
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 5),
 //          decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1 ),borderRadius: BorderRadius.all(Radius.circular(10)) ),
-                  child: EditableText(
-                      onChanged: (str) => {updateNoteObject()},
-                      maxLines: null,
-                      controller: _titleController,
-                      focusNode: _titleFocus,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold),
-                      cursorColor: Colors.blue,
-                      backgroundCursorColor: Colors.blue),
+                  child: TextField(
+                    onChanged: (str) => {updateNoteObject()},
+                    maxLines: null,
+                    controller: _titleController,
+                    focusNode: _titleFocus,
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
+                    cursorColor: Colors.blue,
+                    decoration: const InputDecoration.collapsed(
+                      hintText: "Title",
+                      hintStyle: TextStyle(color: Colors.grey)
+                    ),
+                  ),
                 ),
               ),
               const Divider(
@@ -134,7 +172,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                   child: Container(
                       padding: const EdgeInsets.all(5),
 //    decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1),borderRadius: BorderRadius.all(Radius.circular(10)) ),
-                      child: EditableText(
+                      child: TextField(
                         onChanged: (str) => {updateNoteObject()},
                         maxLines: 300,
                         // line limit extendable later
@@ -142,9 +180,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                         focusNode: _contentFocus,
                         style:
                             const TextStyle(color: Colors.black, fontSize: 20),
-                        backgroundCursorColor: Colors.red,
                         cursorColor: Colors.blue,
-                      )))
+                        decoration: const InputDecoration.collapsed(
+                          hintText: "Note",
+                          hintStyle: TextStyle(color: Colors.grey)
+                        ),
+                      )
+                  )
+              )
             ],
           ),
           left: true,
@@ -152,6 +195,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           top: false,
           bottom: false,
         ));
+  }
+
+  void _showNoteSearchDialog(BuildContext context) {
+    _showingNoteSearchDialog = true;
+    showDialog(
+      context: context,
+      builder: (ctx) => NoteSearchDialog((note) {}),
+    ).then((value) => _showingNoteSearchDialog = false);
   }
 
   Widget _pageTitle() {
@@ -207,13 +258,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext ctx) {
+          _showingBottomSheet = true;
           return MoreOptionsSheet(
             color: noteColor,
             callBackColorTapped: _changeColor,
             callBackOptionTapped: bottomSheetOptionTappedHandler,
             dateLastEdited: _editableNote.dateLastEdited,
           );
-        });
+        }).then((value) => _showingBottomSheet = false);
   }
 
   void _persistData() {
@@ -307,7 +359,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                     child: const Text("Yes")),
                 TextButton(
                     onPressed: () => {Navigator.of(context).pop()},
-                    child: const Text("No"))
+                    child: const Text("No")
+                )
               ],
             );
           });
@@ -334,7 +387,11 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _persistenceTimer?.cancel();
     //show saved toast after calling _persistData function.
 
-    _persistData();
+    if (_editableNote.title == "" && _editableNote.content == "") {
+      Provider.of<NoteSetModel>(context, listen: false).deleteNoteModel(_editableNote);
+    } else {
+      _persistData();
+    }
     return true;
   }
 

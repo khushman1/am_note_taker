@@ -1,6 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
+import 'NoteModel.dart';
+
 class CentralStation {
   static bool _updateNeeded = true;
 
@@ -44,6 +46,12 @@ class CentralStation {
     }
 
     return dateString;
+  }
+
+  static NoteModel createEmptyNoteModel()
+  {
+    return NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
+        DateTime.now(), Colors.white, null);
   }
 }
 
