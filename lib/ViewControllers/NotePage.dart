@@ -106,7 +106,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     super.dispose();
   }
 
-  Widget _body(BuildContext ctx) {
+  Widget _body(BuildContext context) {
     var parentController = TextEditingController();
     var messageController = TextEditingController();
     NoteModel note = CentralStation.createEmptyNoteModel();
@@ -121,26 +121,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              InkWell(
-                onTap: () => _showNoteSearchDialog(context),
-                child: TextField(
-                  enabled: false,
-                  controller: parentController,
-                  decoration: InputDecoration(
-                    hintText: "Parent information",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(color: Colors.blue, width: 5)
-                    ),
-                    contentPadding: const EdgeInsets.all(8),
-                    isCollapsed: true,
-                    filled: true,
-                    fillColor: Colors.blueAccent,
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              _createParentDisplayField(context, parentController),
               Flexible(
                 child: Container(
                   width: double.infinity,
@@ -193,6 +174,31 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           top: false,
           bottom: false,
         ));
+  }
+
+  Widget _createParentDisplayField(
+      BuildContext context,
+      TextEditingController parentController) {
+    return InkWell(
+      onTap: () => _showNoteSearchDialog(context),
+      child: TextField(
+        enabled: false,
+        controller: parentController,
+        decoration: InputDecoration(
+          hintText: "Parent information",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              borderSide: const BorderSide(color: Colors.blue, width: 5)
+          ),
+          contentPadding: const EdgeInsets.all(8),
+          isCollapsed: true,
+          filled: true,
+          fillColor: Colors.blueAccent,
+        ),
+        style: const TextStyle(color: Colors.white),
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 
   void _showNoteSearchDialog(BuildContext context) {
