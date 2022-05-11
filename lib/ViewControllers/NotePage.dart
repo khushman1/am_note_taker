@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/NoteSetModel.dart';
-import '../Models/SqliteHandler.dart';
 import 'dart:async';
 import '../Models/Utility.dart';
 import '../Views/MoreOptionsSheet.dart';
@@ -15,7 +14,7 @@ import 'package:share/share.dart';
 class NotePage extends StatefulWidget {
   final NoteModel noteInEditing;
 
-  const NotePage(this.noteInEditing);
+  const NotePage(this.noteInEditing, {Key? key}) : super(key: key);
 
   @override
   _NotePageState createState() => _NotePageState();
@@ -112,8 +111,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     var messageController = TextEditingController();
     NoteModel note = CentralStation.createEmptyNoteModel();
     note.title = "Check title";
-    parentController.text = (widget.noteInEditing != null &&
-        widget.noteInEditing.parent != null)
+    parentController.text = (widget.noteInEditing.parent != null)
         ? "Choose parent"
         : "Parent: ${widget.noteInEditing.parent?.title}";
     return Container(
@@ -374,71 +372,18 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     updateNoteObject();
   }
 
-  void _saveAndStartNewNote(BuildContext context) {
-    _persistenceTimer?.cancel();
-    var emptyNote =
-        Provider.of<NoteSetModel>(context, listen: false).addEmptyNoteModel();
-    Navigator.of(context).pop();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
-  }
-
   Future<bool> _readyToPop() async {
     _persistenceTimer?.cancel();
     //show saved toast after calling _persistData function.
 
     if (_editableNote.title == "" && _editableNote.content == "") {
-      Provider.of<NoteSetModel>(context, listen: false).deleteNoteModel(_editableNote);
+      Provider.of<NoteSetModel>(context, listen: false)
+          .deleteNoteModel(_editableNote);
     } else {
       _persistData();
     }
     return true;
   }
-
-  // void _archivePopup(BuildContext context) {
-  //   if (_editableNote.id != NoteModel.freshNoteUUID) {
-  //     showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return AlertDialog(
-  //             title: const Text("Confirm ?"),
-  //             content: const Text("This note will be archived"),
-  //             actions: <Widget>[
-  //               TextButton(
-  //                   onPressed: () => _archiveThisNote(context),
-  //                   child: const Text("Yes")),
-  //               TextButton(
-  //                   onPressed: () => {Navigator.of(context).pop()},
-  //                   child: const Text("No"))
-  //             ],
-  //           );
-  //         });
-  //   } else {
-  //     _exitWithoutSaving(context);
-  //   }
-  // }
-
-  void _exitWithoutSaving(BuildContext context) {
-    _persistenceTimer?.cancel();
-    Navigator.of(context).pop();
-  }
-
-  // void _archiveThisNote(BuildContext context) {
-  //   Navigator.of(context).pop();
-  //   // set archived flag to true and send the entire note object in the database to be updated
-  //   _editableNote.isArchived = 1;
-  //   var noteDB = NotesDBHandler();
-  //   noteDB.archiveNote(_editableNote);
-  //   // update will be required to remove the archived note from the staggered view
-  //   CentralStation.updateNeeded = true;
-  //   _persistenceTimer?.cancel(); // shutdown the timer
-  //
-  //   Navigator.of(context).pop(); // pop back to staggered view
-  //   // TODO: OPTIONAL show the toast of deletion completion
-  //
-  //   ScaffoldMessenger.of(context)
-  //       .showSnackBar(const SnackBar(content: Text("deleted")));
-  // }
 
   void _copy(BuildContext context) {
     _persistenceTimer?.cancel();
@@ -450,14 +395,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Note copied.")));
     });
-
-    // var status = noteDB.copyNote(copy);
-    // status.then((querySuccess) {
-    //   if (querySuccess) {
-    //     CentralStation.updateNeeded = true;
-    //     Navigator.of(_globalKey.currentContext!).pop();
-    //   }
-    // });
   }
 
   void _undo() {

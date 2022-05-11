@@ -1,16 +1,24 @@
 import 'package:am_note_taker/Views/NoteTile.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import '../ViewControllers/NotePage.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 
 class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
+  final Function(BuildContext, NoteModel)? tapCallback;
+  final bool initiallyExpanded;
+  final bool showChildren;
 
-  const ListExpansionTile(this.note, {Key? key}) : super(key: key);
+  const ListExpansionTile(
+      this.note,
+      {
+        Key? key,
+        this.tapCallback,
+        this.initiallyExpanded = false,
+        this.showChildren = false,
+      }) : super(key: key);
 
   @override
   _ListExpansionTileState createState() => _ListExpansionTileState();
@@ -18,13 +26,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
 
 class _ListExpansionTileState extends State<ListExpansionTile>
     implements NoteListener {
-  late String _content;
-
   late double _fontSize;
-
-  late Color tileColor;
-
-  late String title;
 
   bool expanded = false;
 
@@ -37,16 +39,17 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
   @override
   Widget build(BuildContext context) {
-    _content = widget.note.content;
-    _fontSize = _determineFontSizeForContent();
-    tileColor = widget.note.noteColour;
-    title = widget.note.title;
+    _fontSize = _determineFontSizeForContent(widget.note);
     widget.note.addListener(noteListener);
 
     return Card(
-      child: constructChild(),
-      color: tileColor,
-      shadowColor: tileColor,
+      child: constructChild(
+          context,
+          widget.note,
+          initiallyExpanded: widget.initiallyExpanded
+      ),
+      color: widget.note.noteColour,
+      shadowColor: widget.note.noteColour,
     );
   }
 
@@ -59,35 +62,49 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
   void _noteOpened(BuildContext ctx) {
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)));
+        ctx,
+        MaterialPageRoute(
+            builder: (ctx) => widget.tapCallback!(ctx, widget.note)
+        )
+    );
   }
 
-  Widget constructChild() {
+  Widget constructChild(
+      BuildContext context,
+      NoteModel note,
+      {
+        bool initiallyExpanded = false,
+        bool showChildren = false,
+      }) {
     Widget? contentWidget;
     List<Widget> childrenWidgets = [];
     Widget contentInkwell = InkWell(
-      splashColor: ColorUtils.invert(widget.note.noteColour).withAlpha(30),
+      splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
       onTap: () => _noteOpened(context),
       child: AutoSizeText(
-        _content,
+        note.content,
         style: TextStyle(fontSize: _fontSize, color: Colors.black54),
-        maxLines: widget.note.title.isEmpty ? 3 : 3,
+        maxLines: 3,
         textScaleFactor: 1.5,
         overflow: TextOverflow.ellipsis,
       ),
     );
     Widget titleWidget = contentInkwell;
 
-    if (widget.note.title.isNotEmpty) {
+    if (note.title.isNotEmpty) {
       contentWidget = Padding(
         padding: const EdgeInsets.all(4),
         child: Container(
             decoration: BoxDecoration(
-                border: Border.all(color: tileColor == Colors.white
+                border: Border.all(color: note.noteColour == Colors.white
                     ? CentralStation.borderColor
-                    : ColorUtils.darken(tileColor, 0.3)),
-                color: ColorUtils.darken(tileColor, 0.1),
-                borderRadius: const BorderRadius.all(Radius.circular(4))),
+                    : ColorUtils.darken(note.noteColour, 0.3)
+                ),
+                color: ColorUtils.darken(note.noteColour, 0.1),
+                borderRadius: const BorderRadius.all(
+                    Radius.circular(4)
+                )
+            ),
             child: ListTile(
               title: contentInkwell,
             ),
@@ -95,32 +112,42 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       );
 
       titleWidget = InkWell(
-          splashColor: ColorUtils.invert(widget.note.noteColour).withAlpha(30),
+          splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
           onTap: () => _noteOpened(context),
           child: AutoSizeText(
-            title,
+            note.title,
             style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
-            maxLines: widget.note.title.isEmpty ? 1 : 3,
+            maxLines: 2,
             textScaleFactor: 1.6,
             overflow: TextOverflow.ellipsis,
           ),
       );
       childrenWidgets.add(contentWidget);
     }
-    childrenWidgets.add(_childrenPanel());
+    if (showChildren) {
+      childrenWidgets.add(_childrenPanel(context, note));
+    }
+    if (!showChildren && note.title.isEmpty) {
+      // If not showing children and title is empty, remove the tile arrow
+      return Padding(
+        child: titleWidget,
+        padding: const EdgeInsets.all(8),
+      );
+    }
     return ExpansionTile(
       title: titleWidget,
       children: childrenWidgets,
       textColor: Colors.black,
+      initiallyExpanded: initiallyExpanded,
     );
   }
 
-  Widget _childrenPanel() {
-    return Text(widget.note.children.toString());
+  Widget _childrenPanel(BuildContext context, NoteModel note) {
+    return Text(note.children.toString());
   }
 
-  double _determineFontSizeForContent() {
-    int charCount = _content.length + widget.note.title.length;
+  double _determineFontSizeForContent(NoteModel note) {
+    int charCount = note.content.length + note.title.length;
     double fontSize = 20;
     if (charCount > 110) {
       fontSize = 12;

@@ -1,3 +1,4 @@
+import 'package:am_note_taker/ViewControllers/NotePage.dart';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/cupertino.dart';
@@ -92,7 +93,11 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     if (widget.notesViewType == viewType.Staggered) {
       return MyStaggeredTile(currentNote);
     } else {
-      return ListExpansionTile(currentNote);
+      return ListExpansionTile(
+        currentNote,
+        tapCallback: (ctx, note) => NotePage(note),
+        showChildren: true,
+      );
     }
   }
 }
