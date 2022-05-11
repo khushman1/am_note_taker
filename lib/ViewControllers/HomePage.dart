@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'StaggeredGridPage.dart';
-import '../Models/NoteModel.dart';
 import 'NotePage.dart';
 import '../Models/Utility.dart';
 
@@ -64,7 +63,7 @@ class _HomePageState extends State<HomePage> {
       children: <Widget>[
         TextButton(
           child: const Text(
-            "New Note\n",
+            "➕\tNew Note\n", // symbol is plus
             style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
           ),
           onPressed: () => _newNoteTapped(context),
