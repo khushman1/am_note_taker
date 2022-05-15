@@ -1,3 +1,4 @@
+import 'package:am_note_taker/ViewControllers/NotePage.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -10,14 +11,18 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   final Function(BuildContext, NoteModel)? tapCallback;
   final bool initiallyExpanded;
   final bool showChildren;
+  final int contentMaxLines;
+  final int titleMaxLines;
 
   const ListExpansionTile(
-      this.note,
       {
-        Key? key,
+        required this.note,
         this.tapCallback,
         this.initiallyExpanded = false,
         this.showChildren = false,
+        this.contentMaxLines = 3,
+        this.titleMaxLines = 2,
+        Key? key,
       }) : super(key: key);
 
   @override
@@ -61,12 +66,9 @@ class _ListExpansionTileState extends State<ListExpansionTile>
   }
 
   void _noteOpened(BuildContext ctx) {
-    Navigator.push(
-        ctx,
-        MaterialPageRoute(
-            builder: (ctx) => widget.tapCallback!(ctx, widget.note)
-        )
-    );
+    if (widget.tapCallback != null) {
+      widget.tapCallback!(ctx, widget.note);
+    }
   }
 
   Widget constructChild(
@@ -84,7 +86,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       child: AutoSizeText(
         note.content,
         style: TextStyle(fontSize: _fontSize, color: Colors.black54),
-        maxLines: 3,
+        maxLines: widget.contentMaxLines,
         textScaleFactor: 1.5,
         overflow: TextOverflow.ellipsis,
       ),
@@ -117,7 +119,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
           child: AutoSizeText(
             note.title,
             style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
-            maxLines: 2,
+            maxLines: widget.titleMaxLines,
             textScaleFactor: 1.6,
             overflow: TextOverflow.ellipsis,
           ),

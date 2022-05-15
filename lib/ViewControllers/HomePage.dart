@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text("Notes"),
       ),
       body: SafeArea(
-        child: _body(),
+        child: _body(context),
         right: true,
         left: true,
         top: true,
@@ -48,12 +48,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _body() {
+  Widget _body(BuildContext context) {
     if (kDebugMode) {
       print(notesViewType);
     }
     return StaggeredGridPage(
       notesViewType: notesViewType,
+      tapCallback: (context, note) => Navigator.push(
+        context, MaterialPageRoute(builder: (ctx) => NotePage(note))
+      ),
     );
   }
 

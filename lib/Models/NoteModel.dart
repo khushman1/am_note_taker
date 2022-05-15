@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 class NoteModel extends ChangeNotifier {
   static const String freshNoteUUID = "__freshnote__";
+  static const String noneNoteEmptyString = "<No parent>";
   Uuid uuid = const Uuid();
 
   String id;

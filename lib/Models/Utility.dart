@@ -1,6 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
+import '../ViewControllers/HomePage.dart';
+import '../Views/ListExpansionTiles.dart';
+import '../Views/NoteTile.dart';
+import '../Views/StaggeredTiles.dart';
 import 'NoteModel.dart';
 
 class CentralStation {
@@ -52,6 +57,30 @@ class CentralStation {
   {
     return NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
         DateTime.now(), Colors.white, null);
+  }
+
+  static NoteTile generateTile({
+    required NoteModel currentNote,
+    required viewType notesViewType,
+    Function(BuildContext, NoteModel)? tapCallback,
+    bool showChildren = true
+  }) {
+    if (kDebugMode) {
+      print("Generating $currentNote tile");
+    }
+
+    if (notesViewType == viewType.Staggered) {
+      return MyStaggeredTile(
+        note: currentNote,
+        tapCallback: tapCallback,
+      );
+    } else {
+      return ListExpansionTile(
+        note: currentNote,
+        tapCallback: tapCallback,
+        showChildren: showChildren,
+      );
+    }
   }
 }
 

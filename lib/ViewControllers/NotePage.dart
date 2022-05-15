@@ -1,4 +1,4 @@
-import 'package:am_note_taker/Views/NoteSearchDialog.dart';
+import 'package:am_note_taker/ViewControllers/NoteSearchDialog.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -55,14 +55,17 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _contentFromInitial = widget.noteInEditing.content;
     _colorFromInitial = widget.noteInEditing.noteColour;
 
-    _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      // call insert query here
-      if (kDebugMode) {
-        print("5 seconds passed");
-        print("editable note id: ${_editableNote.id}");
-      }
-      _persistData();
-    });
+    _persistenceTimer = null;
+    if (!_showingNoteSearchDialog && !_showingBottomSheet) {
+      _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        // call insert query here
+        if (kDebugMode) {
+          print("5 seconds passed");
+          print("editable note id: ${_editableNote.id}");
+        }
+        _persistData();
+      });
+    }
   }
 
   @override
@@ -102,6 +105,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   @override
   void dispose() {
+    _persistenceTimer?.cancel();
     _editableNote.removeListener(noteListener);
     super.dispose();
   }
@@ -109,11 +113,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   Widget _body(BuildContext context) {
     var parentController = TextEditingController();
     var messageController = TextEditingController();
-    NoteModel note = CentralStation.createEmptyNoteModel();
-    note.title = "Check title";
-    parentController.text = (widget.noteInEditing.parent != null)
-        ? "Choose parent"
-        : "Parent: ${widget.noteInEditing.parent?.title}";
     return Container(
         color: noteColor,
         padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
@@ -152,7 +151,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                       padding: const EdgeInsets.all(5),
 //    decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1),borderRadius: BorderRadius.all(Radius.circular(10)) ),
                       child: TextField(
-                        onChanged: (str) => {updateNoteObject()},
+                        onChanged: (str) => updateNoteObject(),
                         maxLines: 300,
                         // line limit extendable later
                         controller: _contentController,
@@ -179,6 +178,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   Widget _createParentDisplayField(
       BuildContext context,
       TextEditingController parentController) {
+    String parentString = (_editableNote.parent != null)
+        ? "${_editableNote.parent?.title}|${_editableNote.parent?.content}"
+        : "null";
+    parentController.text = "Parent: $parentString";
     return InkWell(
       onTap: () => _showNoteSearchDialog(context),
       child: TextField(
@@ -205,7 +208,18 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _showingNoteSearchDialog = true;
     showDialog(
       context: context,
-      builder: (ctx) => NoteSearchDialog((note) {}),
+      builder: (ctx) => NoteSearchDialog(
+        tapCallback: (ctx, note) {
+          if (note.id == NoteModel.freshNoteUUID &&
+              note.content == NoteModel.noneNoteEmptyString) {
+            _editableNote.parent = null;
+          } else {
+            _editableNote.parent = note;
+          }
+          setState(() {});
+        },
+        showParentForNote: _editableNote
+      ),
     ).then((value) => _showingNoteSearchDialog = false);
   }
 
@@ -215,7 +229,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   List<Widget> _notePageActions(BuildContext context) {
     List<Widget> actions = [];
-    if (widget.noteInEditing.id != NoteModel.freshNoteUUID) {
+    if (_editableNote.id != NoteModel.freshNoteUUID) {
       actions.add(Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(

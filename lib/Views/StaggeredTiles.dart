@@ -9,8 +9,14 @@ class MyStaggeredTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
   final bool showContent = true;
+  final Function(BuildContext, NoteModel)? tapCallback;
 
-  const MyStaggeredTile(this.note);
+  const MyStaggeredTile(
+      {
+        required this.note,
+        this.tapCallback,
+        Key? key
+      }) : super(key: key);
 
   @override
   _MyStaggeredTileState createState() => _MyStaggeredTileState();
@@ -64,7 +70,11 @@ class _MyStaggeredTileState extends State<MyStaggeredTile>
   void _noteTapped(BuildContext ctx) {
     CentralStation.updateNeeded = false;
     Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(widget.note)));
+        ctx,
+        MaterialPageRoute(
+            builder: (ctx) => widget.tapCallback!(ctx, widget.note)
+        )
+    );
   }
 
   Widget constructChild() {

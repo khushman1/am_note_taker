@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Models/Utility.dart';
 import 'package:am_note_taker/ViewControllers/NotePage.dart';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
@@ -13,9 +14,13 @@ import 'HomePage.dart';
 
 class StaggeredGridPage extends StatefulWidget {
   final viewType notesViewType;
+  final Function(BuildContext, NoteModel)? tapCallback;
 
-  const StaggeredGridPage({Key? key, required this.notesViewType})
-      : super(key: key);
+  const StaggeredGridPage({
+    Key? key,
+    required this.notesViewType,
+    this.tapCallback
+  }) : super(key: key);
 
   @override
   _StaggeredGridPageState createState() => _StaggeredGridPageState();
@@ -41,8 +46,14 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     GlobalKey _stagKey = GlobalKey();
 
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
-      var gridViewChildren = noteSetModel.notesList.reversed
-          .map((e) => _tileGenerator(e)).toList();
+      var gridViewChildren = noteSetModel.notesList.reversed.map(
+              (note) =>
+                  CentralStation.generateTile(
+                      currentNote: note,
+                      notesViewType: widget.notesViewType,
+                      tapCallback: widget.tapCallback
+                  )
+      ).toList();
       return Padding(
         padding: _paddingForView(context),
         child: StaggeredGridView.count(
@@ -83,21 +94,5 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     }
     return EdgeInsets.only(
         left: padding, right: padding, top: topBottom, bottom: topBottom * 7);
-  }
-
-  NoteTile _tileGenerator(NoteModel currentNote) {
-    if (kDebugMode) {
-      print("Generating $currentNote tile");
-    }
-
-    if (widget.notesViewType == viewType.Staggered) {
-      return MyStaggeredTile(currentNote);
-    } else {
-      return ListExpansionTile(
-        currentNote,
-        tapCallback: (ctx, note) => NotePage(note),
-        showChildren: true,
-      );
-    }
   }
 }
