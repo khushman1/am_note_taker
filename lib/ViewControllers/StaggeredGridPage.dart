@@ -49,9 +49,10 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
       var gridViewChildren = noteSetModel.notesList.reversed.map(
               (note) =>
                   CentralStation.generateTile(
-                      currentNote: note,
-                      notesViewType: widget.notesViewType,
-                      tapCallback: widget.tapCallback
+                    currentNote: note,
+                    notesViewType: widget.notesViewType,
+                    tapCallback: widget.tapCallback,
+                    showChildren: true
                   )
       ).toList();
       return Padding(

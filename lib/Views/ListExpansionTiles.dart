@@ -49,9 +49,10 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
     return Card(
       child: constructChild(
-          context,
-          widget.note,
-          initiallyExpanded: widget.initiallyExpanded
+        context,
+        widget.note,
+        initiallyExpanded: widget.initiallyExpanded,
+        showChildren: widget.showChildren
       ),
       color: widget.note.noteColour,
       shadowColor: widget.note.noteColour,
