@@ -9,6 +9,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
   final Function(BuildContext, NoteModel)? tapCallback;
+  final Function(BuildContext, NoteModel)? childrenCallback;
   final bool initiallyExpanded;
   final bool showChildren;
   final int contentMaxLines;
@@ -18,6 +19,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
       {
         required this.note,
         this.tapCallback,
+        this.childrenCallback,
         this.initiallyExpanded = false,
         this.showChildren = false,
         this.contentMaxLines = 3,
@@ -44,7 +46,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
   @override
   Widget build(BuildContext context) {
-    _fontSize = _determineFontSizeForContent(widget.note);
+    _fontSize = TextUtils.determineFontSizeForNoteModel(widget.note);
     widget.note.addListener(noteListener);
 
     return Card(
@@ -146,22 +148,52 @@ class _ListExpansionTileState extends State<ListExpansionTile>
   }
 
   Widget _childrenPanel(BuildContext context, NoteModel note) {
-    return Text(note.children.toString());
+    // return Text(note.children.toString());
+    List<Widget> childTiles =
+        note.children.map((n) => _childTile(context, n)).toList();
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Instances"),
+          ListView(
+            children: childTiles,
+            shrinkWrap: true,
+          )
+        ],
+      ),
+    );
   }
 
-  double _determineFontSizeForContent(NoteModel note) {
-    int charCount = note.content.length + note.title.length;
-    double fontSize = 20;
-    if (charCount > 110) {
-      fontSize = 12;
-    } else if (charCount > 80) {
-      fontSize = 14;
-    } else if (charCount > 50) {
-      fontSize = 16;
-    } else if (charCount > 20) {
-      fontSize = 18;
+  Widget _childTile(BuildContext context, NoteModel note) {
+    String noteText = note.title;
+    if (note.title.isEmpty) {
+      noteText = note.content;
     }
+    return Card(
+      child: InkWell(
+        onTap: () {
+          if (widget.childrenCallback != null) {
+            widget.childrenCallback!(context, note);
+          }
+        },
+        splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
+        child: ListTile(
+          title: Text(
+            noteText,
+            style: TextStyle(
+              fontWeight: (note.title.isNotEmpty) ? FontWeight.bold : FontWeight.normal,
+              fontSize: TextUtils.determineFontSizeForTextLength(noteText.length),
+              overflow: TextOverflow.ellipsis
+            ),
+            maxLines: (note.title.isNotEmpty) ? 2 : 3,
+          ),
+        ),
+      ),
+      color: ColorUtils.darken(note.noteColour),
+      shadowColor: ColorUtils.darken(note.noteColour),
+    );
 
-    return fontSize;
   }
 }

@@ -52,6 +52,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
                     currentNote: note,
                     notesViewType: widget.notesViewType,
                     tapCallback: widget.tapCallback,
+                    childrenCallback: widget.tapCallback,
                     showChildren: true
                   )
       ).toList();

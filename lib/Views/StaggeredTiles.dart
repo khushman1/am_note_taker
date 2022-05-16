@@ -41,7 +41,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile>
   @override
   Widget build(BuildContext context) {
     _content = widget.note.content;
-    _fontSize = _determineFontSizeForContent();
+    _fontSize = TextUtils.determineFontSizeForNoteModel(widget.note);
     tileColor = widget.note.noteColour;
     title = widget.note.title;
     widget.note.addListener(noteListener);
@@ -69,12 +69,7 @@ class _MyStaggeredTileState extends State<MyStaggeredTile>
 
   void _noteTapped(BuildContext ctx) {
     CentralStation.updateNeeded = false;
-    Navigator.push(
-        ctx,
-        MaterialPageRoute(
-            builder: (ctx) => widget.tapCallback!(ctx, widget.note)
-        )
-    );
+    widget.tapCallback!(ctx, widget.note);
   }
 
   Widget constructChild() {
@@ -110,21 +105,5 @@ class _MyStaggeredTileState extends State<MyStaggeredTile>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: contentsOfTiles);
-  }
-
-  double _determineFontSizeForContent() {
-    int charCount = _content.length + widget.note.title.length;
-    double fontSize = 20;
-    if (charCount > 110) {
-      fontSize = 12;
-    } else if (charCount > 80) {
-      fontSize = 14;
-    } else if (charCount > 50) {
-      fontSize = 16;
-    } else if (charCount > 20) {
-      fontSize = 18;
-    }
-
-    return fontSize;
   }
 }

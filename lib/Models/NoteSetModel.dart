@@ -49,7 +49,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     for (NoteModel child in noteToDelete.children) {
       child.parent = null;
     }
-    noteToDelete.parent?.children.remove(noteToDelete);
+    noteToDelete.parent?.removeChild(noteToDelete);
 
     _allNotesInQueryResult.remove(noteToDelete);
     noteDB.deleteNote(noteToDelete).then((value) => notifyListeners());
@@ -121,7 +121,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         NoteModel? currentNote = noteIdMap[e["id"]];
         if (currentNote != null) {
           currentNote.parent = noteIdMap[e["parent"]];
-          currentNote.parent?.children.add(currentNote);
+          currentNote.parent?.addChild(currentNote);
         }
       }
       if (kDebugMode) {
@@ -148,5 +148,18 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   @override
   void noteListener() {
     // This is a stub class because this class reads note listeners directly
+  }
+
+  void addParentToNoteModel(NoteModel note, NoteModel parent) {
+    parent.children.add(note);
+    note.parent = parent;
+  }
+
+  void removeParentFromNoteModel(NoteModel note) {
+    if (note.parent == null) {
+      return;
+    }
+    note.parent!.children.remove(note);
+    note.parent = null;
   }
 }

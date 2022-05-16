@@ -205,6 +205,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   void _showNoteSearchDialog(BuildContext context) {
+    NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     _showingNoteSearchDialog = true;
     showDialog(
       context: context,
@@ -212,9 +213,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         tapCallback: (ctx, note) {
           if (note.id == NoteModel.freshNoteUUID &&
               note.content == NoteModel.noneNoteEmptyString) {
-            _editableNote.parent = null;
+            noteSet.removeParentFromNoteModel(_editableNote);
           } else {
-            _editableNote.parent = note;
+            noteSet.addParentToNoteModel(_editableNote, note);
           }
           setState(() {});
         },

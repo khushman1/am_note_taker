@@ -57,7 +57,16 @@ class NoteModel extends ChangeNotifier {
     }
   }
 
-  LinkedHashSet<NoteModel> children = LinkedHashSet();
+  final LinkedHashSet<NoteModel> _children = LinkedHashSet();
+  LinkedHashSet<NoteModel> get children => _children;
+  void addChild(NoteModel newChild) {
+    _children.add(newChild);
+    notifyListeners();
+  }
+  void removeChild(NoteModel note) {
+    _children.remove(note);
+    notifyListeners();
+  }
 
   NoteModel(this.id, this._title, this._content, this.dateCreated,
       this._dateLastEdited, this._noteColour, this._parent);

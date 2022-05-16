@@ -63,6 +63,7 @@ class CentralStation {
     required NoteModel currentNote,
     required viewType notesViewType,
     Function(BuildContext, NoteModel)? tapCallback,
+    Function(BuildContext, NoteModel)? childrenCallback,
     bool showChildren = true
   }) {
     if (kDebugMode) {
@@ -78,6 +79,7 @@ class CentralStation {
       return ListExpansionTile(
         note: currentNote,
         tapCallback: tapCallback,
+        childrenCallback: childrenCallback,
         showChildren: showChildren,
       );
     }
@@ -109,5 +111,27 @@ class ColorUtils {
     final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
 
     return hslLight.toColor();
+  }
+}
+
+class TextUtils {
+  static double determineFontSizeForNoteModel(NoteModel note) {
+    return
+      determineFontSizeForTextLength(note.title.length + note.content.length);
+  }
+
+  static double determineFontSizeForTextLength(int charCount) {
+    double fontSize = 20;
+    if (charCount > 110) {
+      fontSize = 12;
+    } else if (charCount > 80) {
+      fontSize = 14;
+    } else if (charCount > 50) {
+      fontSize = 16;
+    } else if (charCount > 20) {
+      fontSize = 18;
+    }
+
+    return fontSize;
   }
 }
