@@ -4,12 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
+import 'dart:async';
+
 import '../Models/NoteModel.dart';
 import '../Models/NoteSetModel.dart';
-import 'dart:async';
 import '../Models/Utility.dart';
+
 import '../Views/MoreOptionsSheet.dart';
-import 'package:share/share.dart';
+import '../Views/TextFieldMetadataDisplayer.dart';
 
 class NotePage extends StatefulWidget {
   final NoteModel noteInEditing;
@@ -22,7 +25,11 @@ class NotePage extends StatefulWidget {
 
 class _NotePageState extends State<NotePage> implements NoteListener {
   final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
+  final _contentController = TextFieldMetadataDisplayer.fromColors({
+    'apple': Colors.green,
+    'orange': Colors.orange,
+    'test': Colors.blue,
+  });
   late Color noteColor;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
