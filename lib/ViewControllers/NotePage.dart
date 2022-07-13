@@ -25,11 +25,7 @@ class NotePage extends StatefulWidget {
 
 class _NotePageState extends State<NotePage> implements NoteListener {
   final _titleController = TextEditingController();
-  final _contentController = TextFieldMetadataDisplayer.fromColors({
-    'apple': Colors.green,
-    'orange': Colors.orange,
-    'test': Colors.blue,
-  });
+  final _contentController = TextFieldMetadataDisplayer();
   late Color noteColor;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();

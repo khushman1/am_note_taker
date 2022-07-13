@@ -1,17 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class TextFieldMetadataDisplayer extends TextEditingController {
-  final String START_CHILD_TAG = "@@@###@@@";
-  final String END_CHILD_TAG = "@#@#@#@";
-  final Map<String, TextStyle> _mapping;
+  static const String startChildTag = "@#@";
+  static const String endChildTag = "#@#";
   final Pattern _pattern;
   
-  TextFieldMetadataDisplayer.fromColors(Map<String, Color> colorMap)
-      : this(colorMap.map((text, color) =>
-      MapEntry(text, TextStyle(color: color))));
-
-  TextFieldMetadataDisplayer(this._mapping) : _pattern =
-      RegExp(_mapping.keys.map((key) => RegExp.escape(key)).join('|'));
+  TextFieldMetadataDisplayer() : _pattern =
+      RegExp("$startChildTag([a-zA-Z0-9-]*)\$((.|\n)*)^$endChildTag",
+          multiLine: true, unicode: true);
 
   @override
   TextSpan buildTextSpan({
@@ -24,7 +21,11 @@ class TextFieldMetadataDisplayer extends TextEditingController {
     text.splitMapJoin(_pattern,
       onMatch: (Match match) {
         children.add(
-            TextSpan(text: match[0], style: style?.merge(_mapping[match[0]])));
+          TextSpan(
+              text: match[0],
+              style: style?.merge(const TextStyle(backgroundColor: Colors.grey))
+          ),
+        );
         return "";
       },
       onNonMatch: (String text) {
