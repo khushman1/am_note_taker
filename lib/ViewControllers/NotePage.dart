@@ -311,29 +311,19 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
 // this function will ne used to save the updated editing value of the note to the local variables as user types
   void updateNoteObject() {
-    _editableNote.content = _contentController.text;
-    _editableNote.title = _titleController.text;
-    _editableNote.noteColour = noteColor;
-    if (kDebugMode) {
-      print("New note content: ${_editableNote.content}");
-      print("widget.noteInEditing ${widget.noteInEditing}");
-      print("_editableNote $_editableNote");
-
-      // print("same title? ${_editableNote.title == _titleFromInitial}");
-      // print("same content? ${_editableNote.content == _contentFromInitial}");
+    if (_editableNote.content != _contentController.text ||
+        _editableNote.title != _titleController.text ||
+        _editableNote.noteColour != noteColor) {
+      _editableNote.content = _contentController.text;
+      _editableNote.title = _titleController.text;
+      _editableNote.noteColour = noteColor;
+      if (kDebugMode) {
+        print("--------new note content\n${_editableNote
+            .content}\n--------content end");
+      }
+    } else if (kDebugMode) {
+      print("No changes in note.");
     }
-
-    // if (!(_editableNote.title == _titleFromInitial &&
-    //     _editableNote.content == _contentFromInitial) ||
-    //     (_editableNote.id == NoteModel.freshNoteUUID)) {
-    //   // No changes to the note
-    //   // Change last edit time only if the content of the note is mutated in compare to the note which the page was called with.
-    //   _editableNote.dateLastEdited = DateTime.now();
-    //   if (kDebugMode) {
-    //     print("Updating date_last_edited");
-    //   }
-    //   CentralStation.updateNeeded = true;
-    // }
   }
 
   void bottomSheetOptionTappedHandler(moreOptions tappedOption) {

@@ -67,7 +67,7 @@ class CentralStation {
     bool showChildren = true
   }) {
     if (kDebugMode) {
-      print("Generating $currentNote tile");
+      print("Generating ${currentNote.id} ${currentNote.title} tile");
     }
 
     if (notesViewType == viewType.Staggered) {
