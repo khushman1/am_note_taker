@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _body(BuildContext context) {
     if (kDebugMode) {
-      print(notesViewType);
+      print("HomePage body notesViewType: $notesViewType");
     }
     return StaggeredGridPage(
       notesViewType: notesViewType,

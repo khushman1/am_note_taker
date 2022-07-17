@@ -102,7 +102,7 @@ class NotesDBHandler {
           conflictAlgorithm: ConflictAlgorithm.replace);
     } catch (error) {
       if (kDebugMode) {
-        print(error);
+        print("SQL Copy error: ${error}");
       }
       return false;
     }

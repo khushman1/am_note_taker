@@ -315,9 +315,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _editableNote.title = _titleController.text;
     _editableNote.noteColour = noteColor;
     if (kDebugMode) {
-      print("new content: ${_editableNote.content}");
-      print(widget.noteInEditing);
-      print(_editableNote);
+      print("New note content: ${_editableNote.content}");
+      print("widget.noteInEditing ${widget.noteInEditing}");
+      print("_editableNote $_editableNote");
 
       // print("same title? ${_editableNote.title == _titleFromInitial}");
       // print("same content? ${_editableNote.content == _contentFromInitial}");
