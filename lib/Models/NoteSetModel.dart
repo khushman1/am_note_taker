@@ -44,12 +44,6 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   }
 
   void deleteNoteModel(NoteModel noteToDelete) {
-    // Remove tree references before deleting
-    for (NoteModel child in noteToDelete.children) {
-      child.parent = null;
-    }
-    noteToDelete.parent?.removeChild(noteToDelete);
-
     _allNotesInQueryResult.remove(noteToDelete);
     noteDB.deleteNote(noteToDelete).then((value) => notifyListeners());
   }
@@ -65,14 +59,12 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   NoteModel _createNewNoteModel({
     String title = "",
     String content = "",
-    Color noteColor = Colors.white,
-    NoteModel? parent
+    Color noteColor = Colors.white
   }) {
     var newNote = NoteModel.createEmpty();
     newNote.title = title;
     newNote.content = content;
     newNote.noteColour = noteColor;
-    newNote.parent = parent;
     newNote.addListener(() {
       if (kDebugMode) {
         print("Changed ${newNote.title} ${newNote.content}");
@@ -87,8 +79,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     NoteModel copy = _createNewNoteModel(
       title: sourceNote.title,
       content: sourceNote.content,
-      noteColor: sourceNote.noteColour,
-      parent: sourceNote.parent
+      noteColor: sourceNote.noteColour
     );
     _allNotesInQueryResult.add(copy);
 
@@ -115,14 +106,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         print("Values loaded successfully. $noteSet");
       }
 
-      // Fill in parent and children references
-      for (var e in value) {
-        NoteModel? currentNote = noteIdMap[e["id"]];
-        if (currentNote != null) {
-          currentNote.parent = noteIdMap[e["parent"]];
-          currentNote.parent?.addChild(currentNote);
-        }
-      }
+      // TODO: Fill in children references
       if (kDebugMode) {
         print("Values referenced successfully.");
       }
@@ -147,18 +131,5 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   @override
   void noteListener() {
     // This is a stub class because this class reads note listeners directly
-  }
-
-  void addParentToNoteModel(NoteModel note, NoteModel parent) {
-    parent.children.add(note);
-    note.parent = parent;
-  }
-
-  void removeParentFromNoteModel(NoteModel note) {
-    if (note.parent == null) {
-      return;
-    }
-    note.parent!.children.remove(note);
-    note.parent = null;
   }
 }

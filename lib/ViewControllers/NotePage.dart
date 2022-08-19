@@ -50,7 +50,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   void initState() {
     super.initState();
     contentController = TextFieldMetadataController(
-            (match) => _showHeaderParentDialog(context, match));
+            (match) => _showChildChoiceDialog(context, match));
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     contentController.text = _editableNote.content;
@@ -117,7 +117,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   Widget _body(BuildContext context) {
-    var parentController = TextEditingController();
     var messageController = TextEditingController();
     return Container(
         color: noteColor,
@@ -126,7 +125,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              // _createParentDisplayField(context, parentController),
               Flexible(
                 child: Container(
                   width: double.infinity,
@@ -182,36 +180,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  // Widget _createParentDisplayField(
-  //     BuildContext context,
-  //     TextEditingController parentController) {
-  //   String parentString = (_editableNote.parent != null)
-  //       ? "${_editableNote.parent?.title}|${_editableNote.parent?.content}"
-  //       : "null";
-  //   parentController.text = "Parent: $parentString";
-  //   return InkWell(
-  //     onTap: () => _showNoteSearchDialog(context),
-  //     child: TextField(
-  //       enabled: false,
-  //       controller: parentController,
-  //       decoration: InputDecoration(
-  //         hintText: "Parent information",
-  //         border: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10.0),
-  //             borderSide: const BorderSide(color: Colors.blue, width: 5)
-  //         ),
-  //         contentPadding: const EdgeInsets.all(8),
-  //         isCollapsed: true,
-  //         filled: true,
-  //         fillColor: Colors.blueAccent,
-  //       ),
-  //       style: const TextStyle(color: Colors.white),
-  //       textAlign: TextAlign.center,
-  //     ),
-  //   );
-  // }
-
-  void _showHeaderParentDialog(BuildContext context, Match match) {
+  void _showChildChoiceDialog(BuildContext context, Match match) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
         (element) => element.id == match.group(1));
@@ -220,13 +189,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
       context: context,
       builder: (ctx) => NoteSearchDialog(
         tapCallback: (ctx, note) {
-          // if (note.id == NoteModel.freshNoteUUID &&
-          //     note.content == NoteModel.noneNoteEmptyString) {
-          //   noteSet.removeParentFromNoteModel(_editableNote);
-          // } else {
-          //   noteSet.addParentToNoteModel(_editableNote, note);
-          // }
-          contentController.replaceMatchTextWithNewParent(match, note);
+          contentController.replaceMatchIDWithNewChildID(match, note);
           setState(() {});
         },
         selectedNote: noteForMatch,

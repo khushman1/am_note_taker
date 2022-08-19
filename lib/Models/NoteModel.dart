@@ -48,15 +48,6 @@ class NoteModel extends ChangeNotifier {
 
   int isArchived = 0;
 
-  NoteModel? _parent;
-  NoteModel? get parent => _parent;
-  set parent(NoteModel? newParent) {
-    if (_parent != newParent) {
-      _parent = newParent;
-      dateLastEdited = DateTime.now();
-    }
-  }
-
   final LinkedHashSet<NoteModel> _children = LinkedHashSet();
   LinkedHashSet<NoteModel> get children => _children;
   void addChild(NoteModel newChild) {
@@ -69,12 +60,12 @@ class NoteModel extends ChangeNotifier {
   }
 
   NoteModel(this.id, this._title, this._content, this.dateCreated,
-      this._dateLastEdited, this._noteColour, this._parent);
+      this._dateLastEdited, this._noteColour);
 
   static NoteModel createEmpty()
   {
     return NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
-        DateTime.now(), Colors.white, null);
+        DateTime.now(), Colors.white);
   }
 
   Map<String, dynamic> toMap() {
@@ -91,8 +82,7 @@ class NoteModel extends ChangeNotifier {
       'date_created': epochFromDate(dateCreated),
       'date_last_edited': epochFromDate(dateLastEdited),
       'note_color': noteColour.value,
-      'is_archived': isArchived,
-      'parent': parent?.id
+      'is_archived': isArchived
       //  for later use for integrating archiving
     };
     return data;
@@ -117,13 +107,12 @@ class NoteModel extends ChangeNotifier {
       'date_created': epochFromDate(dateCreated),
       'date_last_edited': epochFromDate(dateLastEdited),
       'note_color': noteColour.toString(),
-      'is_archived': isArchived,
-      'parent': parent?.id
+      'is_archived': isArchived
     }.toString();
   }
 
   bool isEmpty() {
     return (id == NoteModel.freshNoteUUID && _title.isEmpty && _content.isEmpty
-        && noteColour == Colors.white && isArchived == 0 && parent == null);
+        && noteColour == Colors.white && isArchived == 0);
   }
 }

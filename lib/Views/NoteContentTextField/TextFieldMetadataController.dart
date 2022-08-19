@@ -127,7 +127,7 @@ class TextFieldMetadataController extends TextEditingController {
           if (selection.end < textStart ||
               selection.end > textStart + match.group(2)!.length) {
             print("heading or ending");
-            // Allow to change the parent here
+            // Allow to change the child here
             _onHeaderTapFunction(match);
           }
           break;
@@ -138,11 +138,11 @@ class TextFieldMetadataController extends TextEditingController {
     print("Where cursor ${selection.isCollapsed} ${selection.start} ${selection.end}");
   }
 
-  void replaceMatchTextWithNewParent(Match match, NoteModel newParent) {
+  void replaceMatchIDWithNewChildID(Match match, NoteModel newChild) {
     // replace here
     String beforeID = text.substring(0, match.start + (startChildTag.length + 1));
     String afterID = text.substring(match.start + (startChildTag.length + 1) + match.group(1)!.length);
-    print("$beforeID${newParent.id}$afterID");
-    text = beforeID + newParent.id + afterID;
+    print("$beforeID${newChild.id}$afterID");
+    text = beforeID + newChild.id + afterID;
   }
 }

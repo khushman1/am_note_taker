@@ -63,10 +63,10 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
 
   List<Widget> _dialogHeader(BuildContext context) {
     List<Widget> header = List.empty(growable: true);
-    late ListExpansionTile parentTile;
+    late ListExpansionTile currentChildTile;
 
     if (widget.selectedNote != null) {
-      parentTile = ListExpansionTile(
+      currentChildTile = ListExpansionTile(
         note: widget.selectedNote!,
         contentMaxLines: 1,
         titleMaxLines: 2,
@@ -74,7 +74,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
     } else {
       NoteModel none = NoteModel.createEmpty();
       none.content = NoteModel.noneNoteEmptyString;
-      parentTile = ListExpansionTile(  // empty tile
+      currentChildTile = ListExpansionTile(  // empty tile
         note: none,
         contentMaxLines: 1,
         titleMaxLines: 1,
@@ -101,7 +101,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
     );
 
     header.add(const Text("Current:"));
-    header.add(parentTile);
+    header.add(currentChildTile);
     header.add(searchBar);
     header.add(const Divider());
     return header;
@@ -117,10 +117,6 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
             }
           }
           if (widget.selectedNote == note) {
-              // ||
-              // (widget.selectedNote != null &&
-              //     widget.selectedNote?.parent != null &&
-              //     widget.selectedNote?.parent == note)) {
             return false;
           }
           if (_searchString.isEmpty) {
@@ -139,17 +135,6 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
           );
         }
       ).toList();
-      // if (widget.selectedNote?.parent != null) {
-      //   NoteModel noneNote = CentralStation.createEmptyNoteModel();
-      //   noneNote.content = NoteModel.noneNoteEmptyString;
-      //   ListExpansionTile noneTile = ListExpansionTile(  // empty tile
-      //     note: noneNote,
-      //     contentMaxLines: 1,
-      //     titleMaxLines: 1,
-      //     tapCallback: _noteCallback,
-      //   );
-      //   gridViewChildren = [noneTile, ...gridViewChildren];
-      // }
       return SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         width: MediaQuery.of(context).size.width,
