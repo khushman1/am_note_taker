@@ -53,12 +53,6 @@ class CentralStation {
     return dateString;
   }
 
-  static NoteModel createEmptyNoteModel()
-  {
-    return NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
-        DateTime.now(), Colors.white, null);
-  }
-
   static NoteTile generateTile({
     required NoteModel currentNote,
     required viewType notesViewType,

@@ -71,6 +71,12 @@ class NoteModel extends ChangeNotifier {
   NoteModel(this.id, this._title, this._content, this.dateCreated,
       this._dateLastEdited, this._noteColour, this._parent);
 
+  static NoteModel createEmpty()
+  {
+    return NoteModel(NoteModel.freshNoteUUID, "", "", DateTime.now(),
+        DateTime.now(), Colors.white, null);
+  }
+
   Map<String, dynamic> toMap() {
     if (id == freshNoteUUID) {
       id = uuid.v1();

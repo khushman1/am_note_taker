@@ -1,7 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:am_note_taker/Models/Utility.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +68,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     Color noteColor = Colors.white,
     NoteModel? parent
   }) {
-    var newNote = CentralStation.createEmptyNoteModel();
+    var newNote = NoteModel.createEmpty();
     newNote.title = title;
     newNote.content = content;
     newNote.noteColour = noteColor;

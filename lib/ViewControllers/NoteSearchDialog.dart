@@ -11,12 +11,14 @@ import '../Models/NoteSetModel.dart';
 
 class NoteSearchDialog extends StatefulWidget {
   final Function(BuildContext, NoteModel) tapCallback;
-  final NoteModel? showParentForNote;
+  final NoteModel? selectedNote;
+  final List<NoteModel>? excludeList;
 
   const NoteSearchDialog(
       {
         required this.tapCallback,
-        this.showParentForNote,
+        this.selectedNote,
+        this.excludeList,
         Key? key
       }) : super(key: key);
 
@@ -60,61 +62,65 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
   }
 
   List<Widget> _dialogHeader(BuildContext context) {
-    if (widget.showParentForNote != null) {
-      List<Widget> header = List.empty(growable: true);
+    List<Widget> header = List.empty(growable: true);
+    late ListExpansionTile parentTile;
 
-      NoteModel none = CentralStation.createEmptyNoteModel();
+    if (widget.selectedNote != null) {
+      parentTile = ListExpansionTile(
+        note: widget.selectedNote!,
+        contentMaxLines: 1,
+        titleMaxLines: 2,
+      );
+    } else {
+      NoteModel none = NoteModel.createEmpty();
       none.content = NoteModel.noneNoteEmptyString;
-      ListExpansionTile parentTile = ListExpansionTile(  // empty tile
+      parentTile = ListExpansionTile(  // empty tile
         note: none,
         contentMaxLines: 1,
         titleMaxLines: 1,
       );
-      if (widget.showParentForNote?.parent != null) {
-        parentTile = ListExpansionTile(
-          note: widget.showParentForNote!.parent!,
-          contentMaxLines: 1,
-          titleMaxLines: 2,
-        );
-      }
-
-      Widget searchBar = Padding(
-        padding: const EdgeInsets.all(4),
-        child: TextField(
-          controller: _searchController,
-          style: const TextStyle(
-          ),
-          decoration: const InputDecoration(
-            hintText: "Search note contents",
-            hintStyle: TextStyle(color: Colors.grey),
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (newValue) {
-            setState(() {
-              _searchString = newValue;
-            });
-          },
-        ),
-      );
-
-      header.add(const Text("Current:"));
-      header.add(parentTile);
-      header.add(searchBar);
-      header.add(const Divider());
-      return header;
-      // return [Row(children: widgetList)];
     }
-    return [];
+
+    Widget searchBar = Padding(
+      padding: const EdgeInsets.all(4),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(
+        ),
+        decoration: const InputDecoration(
+          hintText: "Search note contents",
+          hintStyle: TextStyle(color: Colors.grey),
+          border: OutlineInputBorder(),
+        ),
+        onChanged: (newValue) {
+          setState(() {
+            _searchString = newValue;
+          });
+        },
+      ),
+    );
+
+    header.add(const Text("Current:"));
+    header.add(parentTile);
+    header.add(searchBar);
+    header.add(const Divider());
+    return header;
   }
   
   Widget _dialogListView(BuildContext context) {
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
       Iterable<NoteModel> selectedNotes = noteSetModel.notesList.reversed.where(
         (note) {
-          if (widget.showParentForNote == note ||
-              (widget.showParentForNote != null &&
-                  widget.showParentForNote?.parent != null &&
-                  widget.showParentForNote?.parent == note)) {
+          if (widget.excludeList != null) {
+            if (widget.excludeList!.contains(note)) {
+              return false;
+            }
+          }
+          if (widget.selectedNote == note) {
+              // ||
+              // (widget.selectedNote != null &&
+              //     widget.selectedNote?.parent != null &&
+              //     widget.selectedNote?.parent == note)) {
             return false;
           }
           if (_searchString.isEmpty) {
@@ -133,17 +139,17 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
           );
         }
       ).toList();
-      if (widget.showParentForNote?.parent != null) {
-        NoteModel noneNote = CentralStation.createEmptyNoteModel();
-        noneNote.content = NoteModel.noneNoteEmptyString;
-        ListExpansionTile noneTile = ListExpansionTile(  // empty tile
-          note: noneNote,
-          contentMaxLines: 1,
-          titleMaxLines: 1,
-          tapCallback: _noteCallback,
-        );
-        gridViewChildren = [noneTile, ...gridViewChildren];
-      }
+      // if (widget.selectedNote?.parent != null) {
+      //   NoteModel noneNote = CentralStation.createEmptyNoteModel();
+      //   noneNote.content = NoteModel.noneNoteEmptyString;
+      //   ListExpansionTile noneTile = ListExpansionTile(  // empty tile
+      //     note: noneNote,
+      //     contentMaxLines: 1,
+      //     titleMaxLines: 1,
+      //     tapCallback: _noteCallback,
+      //   );
+      //   gridViewChildren = [noneTile, ...gridViewChildren];
+      // }
       return SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         width: MediaQuery.of(context).size.width,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:collection/collection.dart';
 import 'dart:async';
 
 import '../Models/NoteModel.dart';
@@ -12,7 +13,7 @@ import '../Models/NoteSetModel.dart';
 import '../Models/Utility.dart';
 
 import '../Views/MoreOptionsSheet.dart';
-import '../Views/TextFieldMetadataDisplayer.dart';
+import '../Views/NoteContentTextField/TextFieldMetadataController.dart';
 
 class NotePage extends StatefulWidget {
   final NoteModel noteInEditing;
@@ -25,7 +26,7 @@ class NotePage extends StatefulWidget {
 
 class _NotePageState extends State<NotePage> implements NoteListener {
   final _titleController = TextEditingController();
-  final _contentController = TextFieldMetadataDisplayer();
+  late final TextFieldMetadataController contentController;
   late Color noteColor;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
@@ -48,9 +49,11 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   @override
   void initState() {
     super.initState();
+    contentController = TextFieldMetadataController(
+            (match) => _showHeaderParentDialog(context, match));
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
-    _contentController.text = _editableNote.content;
+    contentController.text = _editableNote.content;
     noteColor = _editableNote.noteColour;
     _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
 
@@ -123,7 +126,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              _createParentDisplayField(context, parentController),
+              // _createParentDisplayField(context, parentController),
               Flexible(
                 child: Container(
                   width: double.infinity,
@@ -157,7 +160,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                         onChanged: (str) => updateNoteObject(),
                         maxLines: 300,
                         // line limit extendable later
-                        controller: _contentController,
+                        controller: contentController,
                         focusNode: _contentFocus,
                         style:
                             const TextStyle(color: Colors.black, fontSize: 20),
@@ -166,6 +169,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                           hintText: "Note",
                           hintStyle: TextStyle(color: Colors.grey)
                         ),
+                        onTap: contentController.openWindowOnTap,
                       )
                   )
               )
@@ -178,51 +182,55 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  Widget _createParentDisplayField(
-      BuildContext context,
-      TextEditingController parentController) {
-    String parentString = (_editableNote.parent != null)
-        ? "${_editableNote.parent?.title}|${_editableNote.parent?.content}"
-        : "null";
-    parentController.text = "Parent: $parentString";
-    return InkWell(
-      onTap: () => _showNoteSearchDialog(context),
-      child: TextField(
-        enabled: false,
-        controller: parentController,
-        decoration: InputDecoration(
-          hintText: "Parent information",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10.0),
-              borderSide: const BorderSide(color: Colors.blue, width: 5)
-          ),
-          contentPadding: const EdgeInsets.all(8),
-          isCollapsed: true,
-          filled: true,
-          fillColor: Colors.blueAccent,
-        ),
-        style: const TextStyle(color: Colors.white),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
+  // Widget _createParentDisplayField(
+  //     BuildContext context,
+  //     TextEditingController parentController) {
+  //   String parentString = (_editableNote.parent != null)
+  //       ? "${_editableNote.parent?.title}|${_editableNote.parent?.content}"
+  //       : "null";
+  //   parentController.text = "Parent: $parentString";
+  //   return InkWell(
+  //     onTap: () => _showNoteSearchDialog(context),
+  //     child: TextField(
+  //       enabled: false,
+  //       controller: parentController,
+  //       decoration: InputDecoration(
+  //         hintText: "Parent information",
+  //         border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10.0),
+  //             borderSide: const BorderSide(color: Colors.blue, width: 5)
+  //         ),
+  //         contentPadding: const EdgeInsets.all(8),
+  //         isCollapsed: true,
+  //         filled: true,
+  //         fillColor: Colors.blueAccent,
+  //       ),
+  //       style: const TextStyle(color: Colors.white),
+  //       textAlign: TextAlign.center,
+  //     ),
+  //   );
+  // }
 
-  void _showNoteSearchDialog(BuildContext context) {
+  void _showHeaderParentDialog(BuildContext context, Match match) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
+    NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
+        (element) => element.id == match.group(1));
     _showingNoteSearchDialog = true;
     showDialog(
       context: context,
       builder: (ctx) => NoteSearchDialog(
         tapCallback: (ctx, note) {
-          if (note.id == NoteModel.freshNoteUUID &&
-              note.content == NoteModel.noneNoteEmptyString) {
-            noteSet.removeParentFromNoteModel(_editableNote);
-          } else {
-            noteSet.addParentToNoteModel(_editableNote, note);
-          }
+          // if (note.id == NoteModel.freshNoteUUID &&
+          //     note.content == NoteModel.noneNoteEmptyString) {
+          //   noteSet.removeParentFromNoteModel(_editableNote);
+          // } else {
+          //   noteSet.addParentToNoteModel(_editableNote, note);
+          // }
+          contentController.replaceMatchTextWithNewParent(match, note);
           setState(() {});
         },
-        showParentForNote: _editableNote
+        selectedNote: noteForMatch,
+        excludeList: [_editableNote], // Don't let parents be their own children
       ),
     ).then((value) => _showingNoteSearchDialog = false);
   }
@@ -311,10 +319,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
 // this function will ne used to save the updated editing value of the note to the local variables as user types
   void updateNoteObject() {
-    if (_editableNote.content != _contentController.text ||
+    if (_editableNote.content != contentController.text ||
         _editableNote.title != _titleController.text ||
         _editableNote.noteColour != noteColor) {
-      _editableNote.content = _contentController.text;
+      _editableNote.content = contentController.text;
       _editableNote.title = _titleController.text;
       _editableNote.noteColour = noteColor;
       if (kDebugMode) {
@@ -413,7 +421,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   void _undo() {
     _titleController.text = _titleFromInitial; // widget.noteInEditing.title;
-    _contentController.text =
+    contentController.text =
         _contentFromInitial; // widget.noteInEditing.content;
     _editableNote.dateLastEdited =
         _lastEditedForUndo; // widget.noteInEditing.date_last_edited;
