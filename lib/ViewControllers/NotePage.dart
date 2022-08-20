@@ -50,7 +50,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   void initState() {
     super.initState();
     contentController = TextFieldMetadataController(
-            (match) => _showChildChoiceDialog(context, match));
+            (match) => _showReplaceChildIDDialog(context, match));
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     contentController.text = _editableNote.content;
@@ -180,19 +180,30 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  void _showChildChoiceDialog(BuildContext context, Match match) {
+  void _showReplaceChildIDDialog(BuildContext context, Match match) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
         (element) => element.id == match.group(1));
+    print("Child ID: ${match.group(1)} ${noteForMatch?.title}");
+    _showChildChoiceDialog(context, noteForMatch,
+        (note) => contentController.replaceMatchIDWithNewChildID(match, note));
+  }
+
+  void _showCreateChildDialog(BuildContext context) {
+    _showChildChoiceDialog(context, null,
+        (note) => contentController.createChild(note));
+  }
+
+  void _showChildChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {
     _showingNoteSearchDialog = true;
     showDialog(
       context: context,
       builder: (ctx) => NoteSearchDialog(
         tapCallback: (ctx, note) {
-          contentController.replaceMatchIDWithNewChildID(match, note);
+          callback(note);
           setState(() {});
         },
-        selectedNote: noteForMatch,
+        selectedNote: selectedNote,
         excludeList: [_editableNote], // Don't let parents be their own children
       ),
     ).then((value) => _showingNoteSearchDialog = false);
@@ -231,6 +242,18 @@ class _NotePageState extends State<NotePage> implements NoteListener {
       //     ),
       //   ),
       // ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: InkWell(
+          child: GestureDetector(
+            onTap: () => _showCreateChildDialog(context),
+            child: const Icon(
+              Icons.add_link,
+              color: CentralStation.fontColor,
+            ),
+          ),
+        ),
+      ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(

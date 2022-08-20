@@ -23,6 +23,7 @@ class TextFieldMetadataController extends TextEditingController {
       bool? withComposing
   }) {
     List<InlineSpan> children = [];
+    matchList.clear();
     // matchList = _pattern.allMatches(text).toList();
     // if (kDebugMode) {
     //   print("Rachel Sonia Cox $matchList");
@@ -33,12 +34,12 @@ class TextFieldMetadataController extends TextEditingController {
     // splitMapJoin is a bit tricky here but i found it very handy for populating children list
     text.splitMapJoin(_pattern,
       onMatch: (Match match) {
-      print("Match bitch");
-        for (int i = 0; i <= match.groupCount; i++)
-          {
-            print("match ${match.group(i)}");
-          }
-        print("over");
+      // print("Match bitch");
+      //   for (int i = 0; i <= match.groupCount; i++)
+      //     {
+      //       print("match ${match.group(i)}");
+      //     }
+      //   print("over");
         matchList.add(match);
         children.add(
           TextSpan(
@@ -142,7 +143,21 @@ class TextFieldMetadataController extends TextEditingController {
     // replace here
     String beforeID = text.substring(0, match.start + (startChildTag.length + 1));
     String afterID = text.substring(match.start + (startChildTag.length + 1) + match.group(1)!.length);
-    print("$beforeID${newChild.id}$afterID");
     text = beforeID + newChild.id + afterID;
+  }
+
+  /// Creates a child depending on the text selection
+  ///
+  /// Takes [newChild] as the ID to add to the new child section.
+  ///
+  /// Shows the child choice dialog, and if:
+  ///   - on an empty line, it will create the encapsulating format and move the
+  ///     cursor to the content in-between it
+  ///   - text is selected, adds the encapsulating format around the selection
+  ///   - collapsed but in between text, encapsulates the paragraph as the child
+  void createChild(NoteModel newChild) {
+    if (selection.isCollapsed) {
+
+    }
   }
 }
