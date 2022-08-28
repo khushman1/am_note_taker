@@ -156,7 +156,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 //    decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1),borderRadius: BorderRadius.all(Radius.circular(10)) ),
                       child: TextField(
                         onChanged: (str) => updateNoteObject(),
-                        maxLines: 300,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
                         // line limit extendable later
                         controller: contentController,
                         focusNode: _contentFocus,
@@ -191,7 +192,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   void _showCreateChildDialog(BuildContext context) {
     _showChildChoiceDialog(context, null,
-        (note) => contentController.createChild(note));
+        (note) => contentController.createChild(context, note));
   }
 
   void _showChildChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {

@@ -184,7 +184,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
             noteText,
             style: TextStyle(
               fontWeight: (note.title.isNotEmpty) ? FontWeight.bold : FontWeight.normal,
-              fontSize: TextUtils.determineFontSizeForTextLength(noteText.length),
+              fontSize: TextUtils.determineFontSizeForTextLength(noteText.characters.length),
               overflow: TextOverflow.ellipsis
             ),
             maxLines: (note.title.isNotEmpty) ? 2 : 3,

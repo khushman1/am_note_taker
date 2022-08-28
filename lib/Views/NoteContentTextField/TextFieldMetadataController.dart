@@ -1,4 +1,5 @@
 import 'package:am_note_taker/Models/NoteModel.dart';
+import 'package:am_note_taker/Models/Utility.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -13,7 +14,7 @@ class TextFieldMetadataController extends TextEditingController {
   final Function(Match)  _onHeaderTapFunction;
   
   TextFieldMetadataController(this._onHeaderTapFunction) : _pattern =
-      RegExp("'$startChildTag([a-zA-Z0-9-]+)'((?:.|\n)*)'$endChildTag'",
+      RegExp("'$startChildTag([a-zA-Z0-9-]+)'((?:.|\n)*?)'$endChildTag'",
           multiLine: true, unicode: true);
 
   @override
@@ -122,12 +123,14 @@ class TextFieldMetadataController extends TextEditingController {
     if (selection.isCollapsed) {
       for (Match match in matchList) {
         if (selection.end >= match.start && selection.end < match.end) {
-          print("Finally in that shit");
           int textStart = match.start + (startChildTag.length + 1) +
               match.group(1)!.length + 1; // @#@!id!
           if (selection.end < textStart ||
               selection.end > textStart + match.group(2)!.length) {
-            print("heading or ending");
+            if (kDebugMode) {
+              print("Within child section header or footer."
+                "Selection: ${selection.end}");
+            }
             // Allow to change the child here
             _onHeaderTapFunction(match);
           }
@@ -136,9 +139,13 @@ class TextFieldMetadataController extends TextEditingController {
       }
     }
 
-    print("Where cursor ${selection.isCollapsed} ${selection.start} ${selection.end}");
+    if (kDebugMode) {
+      print("Selection: ${selection.isCollapsed} ${selection.start}"
+          " ${selection.end}");
+    }
   }
 
+  /// Replaces an existing child section id with [newChild]'s
   void replaceMatchIDWithNewChildID(Match match, NoteModel newChild) {
     // replace here
     String beforeID = text.substring(0, match.start + (startChildTag.length + 1));
@@ -151,13 +158,56 @@ class TextFieldMetadataController extends TextEditingController {
   /// Takes [newChild] as the ID to add to the new child section.
   ///
   /// Shows the child choice dialog, and if:
-  ///   - on an empty line, it will create the encapsulating format and move the
-  ///     cursor to the content in-between it
+  ///   - collapsed on an empty line, or within text, it will create the
+  ///     encapsulating format and move the cursor to the content-space in it
   ///   - text is selected, adds the encapsulating format around the selection
-  ///   - collapsed but in between text, encapsulates the paragraph as the child
-  void createChild(NoteModel newChild) {
+  void createChild(BuildContext context, NoteModel newChild) {
     if (selection.isCollapsed) {
-
+      if (isCollapsedSelectionWithinExistingChild()) {
+        CentralStation.showWarningDialog(
+            context: context,
+            title: const Text("Error"),
+            content: const Text("Cannot create an instance within an instance.")
+        );
+      } else {
+        text = text.substring(0, selection.end) +
+            "'$startChildTag${newChild.id}' '$endChildTag'" +
+            text.substring(selection.end);
+        // selection = TextSelection.collapsed(offset: selection.end +
+        //     (startChildTag.length + 1) + newChild.id.length + 1);
+      }
+    } else {
+      // create child at the beginning and end of selection
+      if (isChildWithinSelectionRange()) {
+        CentralStation.showWarningDialog(
+            context: context,
+            title: const Text("Error"),
+            content: const Text("Cannot create an instance containing an"
+                " instance.")
+        );
+      } else {
+        text = text.substring(0, selection.start) +
+            "'$startChildTag${newChild.id}'" +
+            text.substring(selection.start, selection.end) + "'$endChildTag'";
+      }
     }
+  }
+
+  /// Checks if a selected range contains a child section within it
+  bool isChildWithinSelectionRange() {
+    return matchList.any((child) =>
+        // Either the selection starts before the child section & ends =after
+        (selection.start <= child.start && selection.end > child.start)
+        // Or it starts after the start of the child section & ends =after
+        || (selection.start >= child.start && selection.start < child.end)
+        // Or it is completely within a child
+        || (selection.start >= child.start && selection.end <= child.end)
+    );
+  }
+
+  /// Checks if a selection is within an existing child section bounds
+  bool isCollapsedSelectionWithinExistingChild() {
+    return matchList.any((child) =>
+        selection.end >= child.start && selection.end < child.end);
   }
 }

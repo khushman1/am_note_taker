@@ -78,6 +78,30 @@ class CentralStation {
       );
     }
   }
+
+  static void showWarningDialog({
+    required BuildContext context,
+    required Text title,
+    required Text content,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: title,
+          content: content,
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class ColorUtils {
