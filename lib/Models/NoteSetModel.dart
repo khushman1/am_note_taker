@@ -1,12 +1,13 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:am_note_taker/Views/NoteContentTextField/TextFieldMetadataController.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'NoteModel.dart';
-import 'SqliteHandler.dart';
+import 'NotesDBHandler.dart';
 
 class NoteSetModel extends ChangeNotifier implements NoteListener {
   NotesDBHandler noteDB = NotesDBHandler();
@@ -92,6 +93,8 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     return noteDB.insertNote(note, note.id == NoteModel.freshNoteUUID);
   }
 
+  /// Loads all [NoteModel]s from the database into the [NoteSetModel] and
+  /// populates children ids for each [NoteModel]
   LinkedHashSet<NoteModel> readDatabaseNotes(List<Map<String, dynamic>>? value)
   {
     HashMap<String, NoteModel> noteIdMap = HashMap();
@@ -106,7 +109,15 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         print("Values loaded successfully. $noteSet");
       }
 
-      // TODO: Fill in children references
+      for (NoteModel note in noteSet) {
+        Iterable<Match> matches = TextFieldMetadataController.childMatchRegex
+            .allMatches(note.content);
+        for (Match match in matches) {
+          if (match[1] != null && noteIdMap.containsKey(match[1])) {
+            note.addChild(match[1]!);
+          }
+        }
+      }
       if (kDebugMode) {
         print("Values referenced successfully.");
       }
@@ -114,6 +125,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     return noteSet;
   }
 
+  /// Create [NoteModel] from an individual [NotesDBHandler] row (as a [Map])
   NoteModel convertMapToNote(Map<String, dynamic> map) {
     NoteModel note = _createNewNoteModel(
       title: map["title"] == null ? "" : utf8.decode(map["title"]),

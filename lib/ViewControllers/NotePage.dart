@@ -49,10 +49,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   @override
   void initState() {
     super.initState();
-    contentController = TextFieldMetadataController(
-            (match) => _showReplaceChildIDDialog(context, match));
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
+    contentController = TextFieldMetadataController(_editableNote,
+            (match) => _showReplaceChildIDDialog(context, match));
     contentController.text = _editableNote.content;
     noteColor = _editableNote.noteColour;
     _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
@@ -192,7 +192,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   void _showCreateChildDialog(BuildContext context) {
     _showChildChoiceDialog(context, null,
-        (note) => contentController.createChild(context, note));
+        (note) => contentController.createChildFromSelection(context, note));
   }
 
   void _showChildChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {

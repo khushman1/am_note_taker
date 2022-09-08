@@ -2,20 +2,31 @@ import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/Utility.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+/// [TextFieldMetadataController] is a [TextEditingController] that manages
+/// children in between notes. On every [buildTextSpan], the children are
+/// re-evaluated. It maintains this list by cloning the set of children on
+/// construction, and after, intelligently updates this list to keep track
 class TextFieldMetadataController extends TextEditingController {
   static const String startChildTag = "@#@";
   static const String endChildTag = "#@#";
   static const double delimiterFontSize = 14;
   List<Match> matchList = List.empty(growable: true);
-  final Pattern _pattern;
-  final Function(Match)  _onHeaderTapFunction;
+  static final Pattern childMatchRegex = RegExp(
+      "'$startChildTag([a-zA-Z0-9-]+)'((?:.|\n)*?)'$endChildTag'",
+      multiLine: true,
+      unicode: true
+  );
+  final Function(Match) _onHeaderTapFunction;
+  final NoteModel _noteBeingEdited;
+  late Set<String> _temporaryChildrenSet;
   
-  TextFieldMetadataController(this._onHeaderTapFunction) : _pattern =
-      RegExp("'$startChildTag([a-zA-Z0-9-]+)'((?:.|\n)*?)'$endChildTag'",
-          multiLine: true, unicode: true);
+  TextFieldMetadataController(
+      this._noteBeingEdited,
+      this._onHeaderTapFunction) {
+    _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
+  }
 
   @override
   TextSpan buildTextSpan({
@@ -23,26 +34,18 @@ class TextFieldMetadataController extends TextEditingController {
       TextStyle? style,
       bool? withComposing
   }) {
-    List<InlineSpan> children = [];
+    List<InlineSpan> childrenSpans = [];
     matchList.clear();
-    // matchList = _pattern.allMatches(text).toList();
-    // if (kDebugMode) {
-    //   print("Rachel Sonia Cox $matchList");
-    //   matchList.forEach((item){
-    //     print("${item.start} ${item.end} ${item.group(0)}");
-    //   });
-    // }
-    // splitMapJoin is a bit tricky here but i found it very handy for populating children list
-    text.splitMapJoin(_pattern,
+    // splitMapJoin is a bit tricky here but i found it very handy for
+    // populating children list
+    text.splitMapJoin(childMatchRegex,
       onMatch: (Match match) {
-      // print("Match bitch");
-      //   for (int i = 0; i <= match.groupCount; i++)
-      //     {
-      //       print("match ${match.group(i)}");
-      //     }
-      //   print("over");
+        String id = (match[1] ?? "");
+        String? content = match[2];
         matchList.add(match);
-        children.add(
+        _noteBeingEdited.addChild(id);
+        _temporaryChildrenSet.remove(id);
+        childrenSpans.add(
           TextSpan(
               children: [
                 TextSpan(
@@ -51,22 +54,24 @@ class TextFieldMetadataController extends TextEditingController {
                       TextStyle(
                         backgroundColor: Colors.green.withOpacity(0.5),
                         color: Colors.green,
-                        // fontSize: delimiterFontSize,
                       )
                   ),
                 ),
-                // WidgetSpan(child: Text(
-                //   // controller: TextEditingController(text: match[1]),
-                //   match[1] ?? "",
-                //   style: style?.merge(TextStyle(backgroundColor: Colors.pink.withOpacity(0.5))),
-                // )),
                 TextSpan(
-                  text: (match[1] ?? "") + "'",
-                  style: style?.merge(TextStyle(backgroundColor: Colors.pink.withOpacity(0.5))),
+                  text: id + "'",
+                  style: style?.merge(
+                      TextStyle(
+                        backgroundColor: Colors.pink.withOpacity(0.5)
+                      )
+                  ),
                 ),
                 TextSpan(
-                  text: match[2],
-                  style: style?.merge(TextStyle(backgroundColor: Colors.orange.withOpacity(0.5))),
+                  text: content,
+                  style: style?.merge(
+                      TextStyle(
+                          backgroundColor: Colors.orange.withOpacity(0.5)
+                      )
+                  ),
                 ),
                 TextSpan(
                   text: "'$endChildTag'",
@@ -81,14 +86,17 @@ class TextFieldMetadataController extends TextEditingController {
               ]
           ),
         );
-        return "";
+        _temporaryChildrenSet.forEach(_noteBeingEdited.removeChild);
+        _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
+
+        return match[0] ?? "";
       },
       onNonMatch: (String text) {
-        children.add(TextSpan(text: text, style: style));
-        return "";
+        childrenSpans.add(TextSpan(text: text, style: style));
+        return text;
       },
     );
-    return TextSpan(style: style, children: children);
+    return TextSpan(style: style, children: childrenSpans);
   }
 
   void _showMyDialog(BuildContext context) async {
@@ -147,9 +155,10 @@ class TextFieldMetadataController extends TextEditingController {
 
   /// Replaces an existing child section id with [newChild]'s
   void replaceMatchIDWithNewChildID(Match match, NoteModel newChild) {
-    // replace here
-    String beforeID = text.substring(0, match.start + (startChildTag.length + 1));
-    String afterID = text.substring(match.start + (startChildTag.length + 1) + match.group(1)!.length);
+    String beforeID = text.substring(0,
+        match.start + (startChildTag.length + 1));
+    String afterID = text.substring(
+        match.start + (startChildTag.length + 1) + match.group(1)!.length);
     text = beforeID + newChild.id + afterID;
   }
 
@@ -161,7 +170,7 @@ class TextFieldMetadataController extends TextEditingController {
   ///   - collapsed on an empty line, or within text, it will create the
   ///     encapsulating format and move the cursor to the content-space in it
   ///   - text is selected, adds the encapsulating format around the selection
-  void createChild(BuildContext context, NoteModel newChild) {
+  void createChildFromSelection(BuildContext context, NoteModel newChild) {
     if (selection.isCollapsed) {
       if (isCollapsedSelectionWithinExistingChild()) {
         CentralStation.showWarningDialog(

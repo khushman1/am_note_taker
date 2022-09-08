@@ -1,7 +1,8 @@
-import 'package:am_note_taker/ViewControllers/NotePage.dart';
+import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 
@@ -166,7 +167,13 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     );
   }
 
-  Widget _childTile(BuildContext context, NoteModel note) {
+  Widget _childTile(BuildContext context, String noteID) {
+    NoteModel note = Provider.of<NoteSetModel>(context, listen: false).noteSet
+        .singleWhere((element) => element.id == noteID,
+            orElse: () => NoteModel.createEmpty());
+    if (note.isEmpty()) {
+      note.markInvalid();
+    }
     String noteText = note.title;
     if (note.title.isEmpty) {
       noteText = note.content;
@@ -174,7 +181,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     return Card(
       child: InkWell(
         onTap: () {
-          if (widget.childrenCallback != null) {
+          if (widget.childrenCallback != null && !note.isInvalid()) {
             widget.childrenCallback!(context, note);
           }
         },

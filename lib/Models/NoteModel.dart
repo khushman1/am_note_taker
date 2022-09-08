@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:uuid/uuid.dart';
 class NoteModel extends ChangeNotifier {
   static const String freshNoteUUID = "__freshnote__";
   static const String noneNoteEmptyString = "<No parent>";
+  static const String invalidNoteContent = "____INVALID____";
   Uuid uuid = const Uuid();
 
   String id;
@@ -48,15 +48,17 @@ class NoteModel extends ChangeNotifier {
 
   int isArchived = 0;
 
-  final LinkedHashSet<NoteModel> _children = LinkedHashSet();
-  LinkedHashSet<NoteModel> get children => _children;
-  void addChild(NoteModel newChild) {
-    _children.add(newChild);
-    notifyListeners();
+  final Set<String> _children = {};
+  Set<String> get children => _children;
+  void addChild(String newChildID) {
+    if (_children.add(newChildID)) {
+      notifyListeners();
+    }
   }
-  void removeChild(NoteModel note) {
-    _children.remove(note);
-    notifyListeners();
+  void removeChild(String childID) {
+    if (_children.remove(childID)) {
+      notifyListeners();
+    }
   }
 
   NoteModel(this.id, this._title, this._content, this.dateCreated,
@@ -111,8 +113,20 @@ class NoteModel extends ChangeNotifier {
     }.toString();
   }
 
-  bool isEmpty() {
-    return (id == NoteModel.freshNoteUUID && _title.isEmpty && _content.isEmpty
+  bool _isEmptyExceptContent() {
+    return (id == NoteModel.freshNoteUUID && _title.isEmpty
         && noteColour == Colors.white && isArchived == 0);
+  }
+
+  bool isEmpty() {
+    return _isEmptyExceptContent() && _content.isEmpty;
+  }
+
+  bool isInvalid() {
+    return _isEmptyExceptContent() && _content == invalidNoteContent;
+  }
+
+  void markInvalid() {
+    _content = invalidNoteContent;
   }
 }
