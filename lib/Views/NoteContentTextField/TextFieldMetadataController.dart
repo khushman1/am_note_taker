@@ -1,6 +1,5 @@
 import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/Utility.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +42,7 @@ class TextFieldMetadataController extends TextEditingController {
         String id = (match[1] ?? "");
         String? content = match[2];
         matchList.add(match);
-        _noteBeingEdited.addChild(id);
+        _noteBeingEdited.addChild(newChildID: id, isBuilding: true);
         _temporaryChildrenSet.remove(id);
         childrenSpans.add(
           TextSpan(
@@ -86,8 +85,6 @@ class TextFieldMetadataController extends TextEditingController {
               ]
           ),
         );
-        _temporaryChildrenSet.forEach(_noteBeingEdited.removeChild);
-        _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
 
         return match[0] ?? "";
       },
@@ -96,35 +93,11 @@ class TextFieldMetadataController extends TextEditingController {
         return text;
       },
     );
+    for (var child in _temporaryChildrenSet) {
+      _noteBeingEdited.removeChild(childID: child, isBuilding: true);
+    }
+    _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
     return TextSpan(style: style, children: childrenSpans);
-  }
-
-  void _showMyDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('AlertDialog Title'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text('This is a demo alert dialog.'),
-                Text('Would you like to approve of this message?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Approve'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void openWindowOnTap() {

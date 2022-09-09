@@ -1,5 +1,6 @@
 import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:provider/provider.dart';
@@ -52,8 +53,8 @@ class _ListExpansionTileState extends State<ListExpansionTile>
 
     return Card(
       child: constructChild(
-        context,
-        widget.note,
+        context: context,
+        note: widget.note,
         initiallyExpanded: widget.initiallyExpanded,
         showChildren: widget.showChildren
       ),
@@ -75,10 +76,9 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     }
   }
 
-  Widget constructChild(
-      BuildContext context,
-      NoteModel note,
-      {
+  Widget constructChild({
+        required BuildContext context,
+        required NoteModel note,
         bool initiallyExpanded = false,
         bool showChildren = false,
       }) {

@@ -50,13 +50,19 @@ class NoteModel extends ChangeNotifier {
 
   final Set<String> _children = {};
   Set<String> get children => _children;
-  void addChild(String newChildID) {
-    if (_children.add(newChildID)) {
-      notifyListeners();
+  void addChild({
+    required String newChildID,
+    bool isBuilding = false
+  }) {
+    if (_children.add(newChildID) && !isBuilding) {
+        notifyListeners();
     }
   }
-  void removeChild(String childID) {
-    if (_children.remove(childID)) {
+  void removeChild({
+    required String childID,
+    bool isBuilding = false
+  }) {
+    if (_children.remove(childID) && !isBuilding) {
       notifyListeners();
     }
   }

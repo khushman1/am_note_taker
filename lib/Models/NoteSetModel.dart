@@ -68,7 +68,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     newNote.noteColour = noteColor;
     newNote.addListener(() {
       if (kDebugMode) {
-        print("Changed ${newNote.title} ${newNote.content}");
+        print("Changed ${newNote.id} ${newNote.title}");
       }
       saveNoteModelToDb(newNote);
       _reorderJustModifiedNoteModel(newNote);
@@ -112,9 +112,13 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
       for (NoteModel note in noteSet) {
         Iterable<Match> matches = TextFieldMetadataController.childMatchRegex
             .allMatches(note.content);
+        if (kDebugMode) {
+          print("Loading db notes: ${note.title}"
+              "${matches.map((e) => e.group(1))}");
+        }
         for (Match match in matches) {
           if (match[1] != null && noteIdMap.containsKey(match[1])) {
-            note.addChild(match[1]!);
+            note.addChild(newChildID: match[1]!);
           }
         }
       }
