@@ -1,15 +1,10 @@
 import 'package:am_note_taker/Models/Utility.dart';
-import 'package:am_note_taker/ViewControllers/NotePage.dart';
-import 'package:am_note_taker/Views/ListExpansionTiles.dart';
-import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/NoteSetModel.dart';
-import '../Views/StaggeredTiles.dart';
 import 'HomePage.dart';
 
 class StaggeredGridPage extends StatefulWidget {

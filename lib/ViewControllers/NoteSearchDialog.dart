@@ -2,6 +2,7 @@ import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/Utility.dart';
 import 'package:am_note_taker/ViewControllers/HomePage.dart';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -13,12 +14,14 @@ class NoteSearchDialog extends StatefulWidget {
   final Function(BuildContext, NoteModel) tapCallback;
   final NoteModel? selectedNote;
   final List<String>? excludeListIds;
+  final bool? searchInstances;
 
   const NoteSearchDialog(
       {
         required this.tapCallback,
         this.selectedNote,
         this.excludeListIds,
+        this.searchInstances,
         Key? key
       }) : super(key: key);
 
@@ -109,6 +112,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
   
   Widget _dialogListView(BuildContext context) {
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
+      List<NoteModel> expandInitially = List.empty(growable: true);
       Iterable<NoteModel> selectedNotes = noteSetModel.notesList.reversed.where(
         (note) {
           if (widget.excludeListIds != null) {
@@ -122,6 +126,17 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
           if (_searchString.isEmpty) {
             return true;
           }
+          /// We only search within each notes' actual instance
+          if (widget.searchInstances != null &&
+              widget.searchInstances == true) {
+            for (ParentReference ref in note.children) {
+              if (ref.content.contains(_searchString)) {
+                /// If an instance contains the search term, expand the tile
+                expandInitially.add(note);
+                return true;
+              }
+            }
+          }
           return note.title.contains(_searchString) ||
               note.content.contains(_searchString);
         }
@@ -131,7 +146,8 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
           return CentralStation.generateTile(
               currentNote: note,
               tapCallback: _noteCallback,
-              notesViewType: viewType.List
+              notesViewType: viewType.List,
+              initiallyExpanded: expandInitially.contains(note),
           );
         }
       ).toList();

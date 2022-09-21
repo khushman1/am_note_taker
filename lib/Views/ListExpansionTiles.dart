@@ -1,12 +1,13 @@
 import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 
+/// Base component that creates a Tile that is extendable and shows the
+/// instances([Children]) of the [NoteModel] alongwith its content.
 class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;

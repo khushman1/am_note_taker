@@ -58,7 +58,8 @@ class CentralStation {
     required viewType notesViewType,
     Function(BuildContext, NoteModel)? tapCallback,
     Function(BuildContext, NoteModel)? childrenCallback,
-    bool showChildren = true
+    bool showChildren = true,
+    bool initiallyExpanded = false,
   }) {
     if (kDebugMode) {
       print("Generating ${currentNote.id} ${currentNote.title} tile");
@@ -75,6 +76,7 @@ class CentralStation {
         tapCallback: tapCallback,
         childrenCallback: childrenCallback,
         showChildren: showChildren,
+        initiallyExpanded: initiallyExpanded,
       );
     }
   }
