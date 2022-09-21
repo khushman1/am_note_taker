@@ -9,22 +9,8 @@ import '../Views/StaggeredTiles.dart';
 import 'NoteModel.dart';
 
 class CentralStation {
-  static bool _updateNeeded = true;
-
   static const fontColor = Color(0xff595959);
   static const borderColor = Color(0xffd3d3d3);
-
-  static bool get updateNeeded {
-    if (_updateNeeded) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  static set updateNeeded(value) {
-    _updateNeeded = value;
-  }
 
   static String stringForDatetime(DateTime dt) {
     var dtInLocal = dt.toLocal();

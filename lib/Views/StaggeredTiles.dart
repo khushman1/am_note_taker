@@ -1,7 +1,6 @@
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import '../ViewControllers/NotePage.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 
@@ -68,7 +67,6 @@ class _MyStaggeredTileState extends State<MyStaggeredTile>
   }
 
   void _noteTapped(BuildContext ctx) {
-    CentralStation.updateNeeded = false;
     widget.tapCallback!(ctx, widget.note);
   }
 
