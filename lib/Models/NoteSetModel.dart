@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:am_note_taker/Views/NoteContentTextField/TextFieldMetadataController.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
@@ -118,7 +119,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         }
         for (Match match in matches) {
           if (match[1] != null && noteIdMap.containsKey(match[1])) {
-            note.addChild(newChildID: match[1]!);
+            note.addChild(newChild: ParentReference.fromMatch(match));
           }
         }
       }

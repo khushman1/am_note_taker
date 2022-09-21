@@ -1,5 +1,6 @@
 import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/Utility.dart';
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -11,20 +12,19 @@ class TextFieldMetadataController extends TextEditingController {
   static const String startChildTag = "@#@";
   static const String endChildTag = "#@#";
   static const double delimiterFontSize = 14;
-  List<Match> matchList = List.empty(growable: true);
   static final Pattern childMatchRegex = RegExp(
       "'$startChildTag([a-zA-Z0-9-]+)'((?:.|\n)*?)'$endChildTag'",
       multiLine: true,
       unicode: true
   );
-  final Function(Match) _onHeaderTapFunction;
+  final Function(ParentReference) _onHeaderTapFunction;
   final NoteModel _noteBeingEdited;
-  late Set<String> _temporaryChildrenSet;
+  late Set<ParentReference> _temporaryChildrenSet;
   
   TextFieldMetadataController(
       this._noteBeingEdited,
       this._onHeaderTapFunction) {
-    _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
+    _temporaryChildrenSet = Set<ParentReference>.from(_noteBeingEdited.children);
   }
 
   @override
@@ -34,16 +34,13 @@ class TextFieldMetadataController extends TextEditingController {
       bool? withComposing
   }) {
     List<InlineSpan> childrenSpans = [];
-    matchList.clear();
     // splitMapJoin is a bit tricky here but i found it very handy for
     // populating children list
     text.splitMapJoin(childMatchRegex,
       onMatch: (Match match) {
-        String id = (match[1] ?? "");
-        String? content = match[2];
-        matchList.add(match);
-        _noteBeingEdited.addChild(newChildID: id, isBuilding: true);
-        _temporaryChildrenSet.remove(id);
+        ParentReference child = ParentReference.fromMatch(match);
+        _noteBeingEdited.addChild(newChild: child, isBuilding: true);
+        _temporaryChildrenSet.remove(child);
         childrenSpans.add(
           TextSpan(
               children: [
@@ -57,7 +54,7 @@ class TextFieldMetadataController extends TextEditingController {
                   ),
                 ),
                 TextSpan(
-                  text: id + "'",
+                  text: child.parentId + "'",
                   style: style?.merge(
                       TextStyle(
                         backgroundColor: Colors.pink.withOpacity(0.5)
@@ -65,7 +62,7 @@ class TextFieldMetadataController extends TextEditingController {
                   ),
                 ),
                 TextSpan(
-                  text: content,
+                  text: child.content,
                   style: style?.merge(
                       TextStyle(
                           backgroundColor: Colors.orange.withOpacity(0.5)
@@ -93,27 +90,27 @@ class TextFieldMetadataController extends TextEditingController {
         return text;
       },
     );
-    for (var child in _temporaryChildrenSet) {
-      _noteBeingEdited.removeChild(childID: child, isBuilding: true);
+    for (ParentReference child in _temporaryChildrenSet) {
+      _noteBeingEdited.removeChild(child: child, isBuilding: true);
     }
-    _temporaryChildrenSet = Set<String>.from(_noteBeingEdited.children);
+    _temporaryChildrenSet = Set<ParentReference>.from(_noteBeingEdited.children);
     return TextSpan(style: style, children: childrenSpans);
   }
 
   void openWindowOnTap() {
     if (selection.isCollapsed) {
-      for (Match match in matchList) {
-        if (selection.end >= match.start && selection.end < match.end) {
-          int textStart = match.start + (startChildTag.length + 1) +
-              match.group(1)!.length + 1; // @#@!id!
+      for (ParentReference reference in _noteBeingEdited.children) {
+        if (selection.end >= reference.begin && selection.end < reference.end) {
+          int textStart = reference.begin + (startChildTag.length + 1) +
+              reference.parentId.length + 1; // @#@!id!
           if (selection.end < textStart ||
-              selection.end > textStart + match.group(2)!.length) {
+              selection.end > textStart + reference.content.length) {
             if (kDebugMode) {
               print("Within child section header or footer."
                 "Selection: ${selection.end}");
             }
             // Allow to change the child here
-            _onHeaderTapFunction(match);
+            _onHeaderTapFunction(reference);
           }
           break;
         }
@@ -127,11 +124,11 @@ class TextFieldMetadataController extends TextEditingController {
   }
 
   /// Replaces an existing child section id with [newChild]'s
-  void replaceMatchIDWithNewChildID(Match match, NoteModel newChild) {
+  void replaceMatchIDWithNewChildID(ParentReference ref, NoteModel newChild) {
     String beforeID = text.substring(0,
-        match.start + (startChildTag.length + 1));
+        ref.begin + (startChildTag.length + 1));
     String afterID = text.substring(
-        match.start + (startChildTag.length + 1) + match.group(1)!.length);
+        ref.begin + (startChildTag.length + 1) + ref.parentId.length);
     text = beforeID + newChild.id + afterID;
   }
 
@@ -177,19 +174,19 @@ class TextFieldMetadataController extends TextEditingController {
 
   /// Checks if a selected range contains a child section within it
   bool isChildWithinSelectionRange() {
-    return matchList.any((child) =>
+    return _noteBeingEdited.children.any((child) =>
         // Either the selection starts before the child section & ends =after
-        (selection.start <= child.start && selection.end > child.start)
+        (selection.start <= child.begin && selection.end > child.begin)
         // Or it starts after the start of the child section & ends =after
-        || (selection.start >= child.start && selection.start < child.end)
+        || (selection.start >= child.begin && selection.start < child.end)
         // Or it is completely within a child
-        || (selection.start >= child.start && selection.end <= child.end)
+        || (selection.start >= child.begin && selection.end <= child.end)
     );
   }
 
   /// Checks if a selection is within an existing child section bounds
   bool isCollapsedSelectionWithinExistingChild() {
-    return matchList.any((child) =>
-        selection.end >= child.start && selection.end < child.end);
+    return _noteBeingEdited.children.any((child) =>
+        selection.end >= child.begin && selection.end < child.end);
   }
 }

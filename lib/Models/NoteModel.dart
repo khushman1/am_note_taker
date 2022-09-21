@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -48,21 +49,21 @@ class NoteModel extends ChangeNotifier {
 
   int isArchived = 0;
 
-  final Set<String> _children = {};
-  Set<String> get children => _children;
+  final Set<ParentReference> _children = {};
+  Set<ParentReference> get children => _children;
   void addChild({
-    required String newChildID,
+    required ParentReference newChild,
     bool isBuilding = false
   }) {
-    if (_children.add(newChildID) && !isBuilding) {
+    if (_children.add(newChild) && !isBuilding) {
         notifyListeners();
     }
   }
   void removeChild({
-    required String childID,
+    required ParentReference child,
     bool isBuilding = false
   }) {
-    if (_children.remove(childID) && !isBuilding) {
+    if (_children.remove(child) && !isBuilding) {
       notifyListeners();
     }
   }

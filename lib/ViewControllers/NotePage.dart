@@ -1,4 +1,5 @@
 import 'package:am_note_taker/ViewControllers/NoteSearchDialog.dart';
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     contentController = TextFieldMetadataController(_editableNote,
-            (match) => _showReplaceChildIDDialog(context, match));
+            (ref) => _showReplaceChildIDDialog(context, ref));
     contentController.text = _editableNote.content;
     noteColor = _editableNote.noteColour;
     _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
@@ -117,7 +118,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   Widget _body(BuildContext context) {
-    var messageController = TextEditingController();
     return Container(
         color: noteColor,
         padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
@@ -181,13 +181,15 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  void _showReplaceChildIDDialog(BuildContext context, Match match) {
+  void _showReplaceChildIDDialog(BuildContext context, ParentReference ref) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
-        (element) => element.id == match.group(1));
-    print("Child ID: ${match.group(1)} ${noteForMatch?.title}");
+        (element) => element.id == ref.parentId);
+    if (kDebugMode) {
+      print("Child ID: ${ref.parentId} ${noteForMatch?.title}");
+    }
     _showChildChoiceDialog(context, noteForMatch,
-        (note) => contentController.replaceMatchIDWithNewChildID(match, note));
+        (note) => contentController.replaceMatchIDWithNewChildID(ref, note));
   }
 
   void _showCreateChildDialog(BuildContext context) {

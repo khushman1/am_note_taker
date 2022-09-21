@@ -151,7 +151,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
   Widget _childrenPanel(BuildContext context, NoteModel note) {
     // return Text(note.children.toString());
     List<Widget> childTiles =
-        note.children.map((n) => _childTile(context, n)).toList();
+        note.children.map((n) => _childTile(context, n.parentId)).toList();
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
