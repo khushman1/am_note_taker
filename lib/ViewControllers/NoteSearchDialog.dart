@@ -12,13 +12,13 @@ import '../Models/NoteSetModel.dart';
 class NoteSearchDialog extends StatefulWidget {
   final Function(BuildContext, NoteModel) tapCallback;
   final NoteModel? selectedNote;
-  final List<NoteModel>? excludeList;
+  final List<String>? excludeListIds;
 
   const NoteSearchDialog(
       {
         required this.tapCallback,
         this.selectedNote,
-        this.excludeList,
+        this.excludeListIds,
         Key? key
       }) : super(key: key);
 
@@ -111,8 +111,8 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
       Iterable<NoteModel> selectedNotes = noteSetModel.notesList.reversed.where(
         (note) {
-          if (widget.excludeList != null) {
-            if (widget.excludeList!.contains(note)) {
+          if (widget.excludeListIds != null) {
+            if (widget.excludeListIds!.contains(note.id)) {
               return false;
             }
           }

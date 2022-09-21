@@ -53,7 +53,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     contentController = TextFieldMetadataController(_editableNote,
-            (ref) => _showReplaceChildIDDialog(context, ref));
+            (ref) => _showReplaceParentDialog(context, ref));
     contentController.text = _editableNote.content;
     noteColor = _editableNote.noteColour;
     _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
@@ -181,23 +181,23 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  void _showReplaceChildIDDialog(BuildContext context, ParentReference ref) {
+  void _showReplaceParentDialog(BuildContext context, ParentReference ref) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
         (element) => element.id == ref.parentId);
     if (kDebugMode) {
       print("Child ID: ${ref.parentId} ${noteForMatch?.title}");
     }
-    _showChildChoiceDialog(context, noteForMatch,
+    _showParentChoiceDialog(context, noteForMatch,
         (note) => contentController.replaceMatchIDWithNewChildID(ref, note));
   }
 
-  void _showCreateChildDialog(BuildContext context) {
-    _showChildChoiceDialog(context, null,
+  void _showCreateParentDialog(BuildContext context) {
+    _showParentChoiceDialog(context, null,
         (note) => contentController.createChildFromSelection(context, note));
   }
 
-  void _showChildChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {
+  void _showParentChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {
     _showingNoteSearchDialog = true;
     showDialog(
       context: context,
@@ -207,7 +207,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           setState(() {});
         },
         selectedNote: selectedNote,
-        excludeList: [_editableNote], // Don't let parents be their own children
+        excludeListIds: [
+          _editableNote.id,  // Don't let parents be their own children
+          ..._editableNote.children.map((e) => e.parentId), // and children uniq
+        ],
       ),
     ).then((value) => _showingNoteSearchDialog = false);
   }
@@ -249,7 +252,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
           child: GestureDetector(
-            onTap: () => _showCreateChildDialog(context),
+            onTap: () => _showCreateParentDialog(context),
             child: const Icon(
               Icons.add_link,
               color: CentralStation.fontColor,
