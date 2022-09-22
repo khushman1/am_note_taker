@@ -17,6 +17,7 @@ import '../Views/MoreOptionsSheet.dart';
 import '../Views/NoteContentTextField/TextFieldMetadataController.dart';
 
 class NotePage extends StatefulWidget {
+  static const double noteActionPadding = 10;
   final NoteModel noteInEditing;
 
   const NotePage(this.noteInEditing, {Key? key}) : super(key: key);
@@ -223,7 +224,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     List<Widget> actions = [];
     if (_editableNote.id != NoteModel.freshNoteUUID) {
       actions.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
             onTap: () => _undo(),
@@ -249,7 +251,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
       //   ),
       // ),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
             onTap: () => _showCreateParentDialog(context),
@@ -261,7 +264,21 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: NotePage.noteActionPadding),
+        child: InkWell(
+          child: GestureDetector(
+            // onTap: () => _showCreateParentDialog(context),
+            child: const Icon(
+              Icons.control_point_duplicate,
+              color: CentralStation.fontColor,
+            ),
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(
+            horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
             onTap: () => bottomSheet(context),
