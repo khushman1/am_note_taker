@@ -119,7 +119,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         }
         for (Match match in matches) {
           if (match[1] != null && noteIdMap.containsKey(match[1])) {
-            note.addChild(newChild: ParentReference.fromMatch(match));
+            note.addChild(newChildRef: ParentReference.fromMatch(match));
           }
         }
       }

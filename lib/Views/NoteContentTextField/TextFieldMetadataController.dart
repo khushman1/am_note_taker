@@ -39,7 +39,7 @@ class TextFieldMetadataController extends TextEditingController {
     text.splitMapJoin(childMatchRegex,
       onMatch: (Match match) {
         ParentReference child = ParentReference.fromMatch(match);
-        _noteBeingEdited.addChild(newChild: child, isBuilding: true);
+        _noteBeingEdited.addChild(newChildRef: child, isBuilding: true);
         _temporaryChildrenSet.remove(child);
         childrenSpans.add(
           TextSpan(
