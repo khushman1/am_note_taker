@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class CentralStation {
     required NoteModel currentNote,
     required viewType notesViewType,
     Function(BuildContext, NoteModel)? tapCallback,
-    Function(BuildContext, NoteModel)? childrenCallback,
+    Function(BuildContext, ParentReference)? instanceCallback,
     bool showChildren = true,
     bool initiallyExpanded = false,
   }) {
@@ -60,7 +61,7 @@ class CentralStation {
       return ListExpansionTile(
         note: currentNote,
         tapCallback: tapCallback,
-        childrenCallback: childrenCallback,
+        instanceCallback: instanceCallback,
         showChildren: showChildren,
         initiallyExpanded: initiallyExpanded,
       );

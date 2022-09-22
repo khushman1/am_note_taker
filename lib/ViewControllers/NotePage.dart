@@ -41,9 +41,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   late NoteModel _editableNote;
 
   bool _showingBottomSheet = false;
-  bool _showingNoteSearchDialog = false;
+  bool _showingDialog = false;
 
-  // the timer variable responsible to call persistData function every 5 seconds and cancel the timer when the page pops.
+  /// The timer variable responsible to call persistData function every 5 sec
+  /// and cancel the timer when the page pops.
   Timer? _persistenceTimer;
 
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey<ScaffoldState>();
@@ -64,7 +65,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _colorFromInitial = widget.noteInEditing.noteColour;
 
     _persistenceTimer = null;
-    if (!_showingNoteSearchDialog && !_showingBottomSheet) {
+    if (!_showingDialog && !_showingBottomSheet) {
       _persistenceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
         // call insert query here
         if (kDebugMode) {
@@ -85,9 +86,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   @override
   Widget build(BuildContext context) {
-    if (_editableNote.id == NoteModel.freshNoteUUID && _editableNote.title.isEmpty
-        && _editableNote.content.isEmpty
-        && !_showingBottomSheet && !_showingNoteSearchDialog) {
+    if (_editableNote.id == NoteModel.freshNoteUUID &&
+        _editableNote.title.isEmpty && _editableNote.content.isEmpty &&
+        !_showingBottomSheet && !_showingDialog) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
     _editableNote.addListener(noteListener);
@@ -129,8 +130,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
               Flexible(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 5),
-//          decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1 ),borderRadius: BorderRadius.all(Radius.circular(10)) ),
+                  padding: const EdgeInsets.only(
+                      left: 5, right: 5, top: 10, bottom: 5),
                   child: TextField(
                     onChanged: (str) => {updateNoteObject()},
                     maxLines: null,
@@ -154,7 +155,6 @@ class _NotePageState extends State<NotePage> implements NoteListener {
               Flexible(
                   child: Container(
                       padding: const EdgeInsets.all(5),
-//    decoration: BoxDecoration(border: Border.all(color: CentralStation.borderColor,width: 1),borderRadius: BorderRadius.all(Radius.circular(10)) ),
                       child: TextField(
                         onChanged: (str) => updateNoteObject(),
                         maxLines: null,
@@ -194,12 +194,22 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   void _showCreateParentDialog(BuildContext context) {
-    _showParentChoiceDialog(context, null,
-        (note) => contentController.createChildFromSelection(context, note));
+    if (contentController.isSelectionOutOfAllChildren()) {
+      _showParentChoiceDialog(context, null,
+              (note) =>
+              contentController.createChildFromSelection(context, note));
+    } else {
+      CentralStation.showWarningDialog(
+          context: context,
+          title: const Text("Error"),
+          content: const Text("Cannot create an instance within an instance.")
+      );
+    }
   }
 
-  void _showParentChoiceDialog(BuildContext context, NoteModel? selectedNote, Function(NoteModel) callback) {
-    _showingNoteSearchDialog = true;
+  void _showParentChoiceDialog(BuildContext context, NoteModel? selectedNote,
+      Function(NoteModel) callback) {
+    _showingDialog = true;
     showDialog(
       context: context,
       builder: (ctx) => NoteSearchDialog(
@@ -213,11 +223,31 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           ..._editableNote.children.map((e) => e.parentId), // and children uniq
         ],
       ),
-    ).then((value) => _showingNoteSearchDialog = false);
+    ).then((value) => _showingDialog = false);
+  }
+
+  void _showInstanceChoiceDialog(BuildContext context, NoteModel? selectedNote,
+      Function(NoteModel) noteCallback, Function(ParentReference) refCallback) {
+    _showingDialog = true;
+    showDialog(
+      context: context,
+      builder: (ctx) => NoteSearchDialog(
+        tapCallback: (ctx, note) {
+          noteCallback(note);
+          setState(() {});
+        },
+        selectedNote: selectedNote,
+        excludeListIds: [
+          _editableNote.id,  // Don't let parents be their own children
+          ..._editableNote.children.map((e) => e.parentId), // and children uniq
+        ],
+      ),
+    ).then((value) => _showingDialog = false);
   }
 
   Widget _pageTitle() {
-    return Text(_editableNote.id == NoteModel.freshNoteUUID ? "New Note" : "Edit Note");
+    return Text(_editableNote.id == NoteModel.freshNoteUUID ?
+        "New Note" : "Edit Note");
   }
 
   List<Widget> _notePageActions(BuildContext context) {
@@ -326,7 +356,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     // }
   }
 
-// this function will ne used to save the updated editing value of the note to the local variables as user types
+/// This function will ne used to save the updated editing value of the note to
+/// the local variables as user types
   void updateNoteObject() {
     if (_editableNote.content != contentController.text ||
         _editableNote.title != _titleController.text ||

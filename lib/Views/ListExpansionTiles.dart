@@ -15,7 +15,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   @override
   final NoteModel note;
   final Function(BuildContext, NoteModel)? tapCallback;
-  final Function(BuildContext, NoteModel)? childrenCallback;
+  final Function(BuildContext, ParentReference)? instanceCallback;
   final bool initiallyExpanded;
   final bool showChildren;
   final int contentMaxLines;
@@ -25,7 +25,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
       {
         required this.note,
         this.tapCallback,
-        this.childrenCallback,
+        this.instanceCallback,
         this.initiallyExpanded = false,
         this.showChildren = false,
         this.contentMaxLines = 3,
@@ -210,8 +210,8 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     return Card(
       child: InkWell(
         onTap: () {
-          if (widget.childrenCallback != null && !note.isInvalid()) {
-            widget.childrenCallback!(context, note);
+          if (widget.instanceCallback != null && !note.isInvalid()) {
+            widget.instanceCallback!(context, ref);
           }
         },
         splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
@@ -228,6 +228,5 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       color: ColorUtils.darken(note.noteColour),
       shadowColor: ColorUtils.darken(note.noteColour),
     );
-
   }
 }

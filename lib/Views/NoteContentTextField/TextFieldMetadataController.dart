@@ -132,6 +132,13 @@ class TextFieldMetadataController extends TextEditingController {
     text = beforeID + newChild.id + afterID;
   }
 
+  bool isSelectionOutOfAllChildren() {
+    return !(
+        (selection.isCollapsed && isCollapsedSelectionWithinExistingChild()) ||
+        (isChildWithinSelectionRange())
+    );
+  }
+
   /// Creates a child depending on the text selection
   ///
   /// Takes [newChild] as the ID to add to the new child section.

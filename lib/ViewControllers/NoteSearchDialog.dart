@@ -15,6 +15,7 @@ class NoteSearchDialog extends StatefulWidget {
   final NoteModel? selectedNote;
   final List<String>? excludeListIds;
   final bool? searchInstances;
+  final Function(BuildContext, ParentReference)? instanceCallback;
 
   const NoteSearchDialog(
       {
@@ -22,6 +23,7 @@ class NoteSearchDialog extends StatefulWidget {
         this.selectedNote,
         this.excludeListIds,
         this.searchInstances,
+        this.instanceCallback,
         Key? key
       }) : super(key: key);
 
@@ -34,12 +36,19 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
   final TextEditingController _searchController = TextEditingController();
   String _searchString = "";
   late Function(BuildContext, NoteModel) _noteCallback;
+  late Function(BuildContext, ParentReference) _instanceCallback;
 
   @override
   Widget build(BuildContext context) {
     _noteCallback = (context, note) {
       Navigator.of(context).pop();
       widget.tapCallback(context, note);
+    };
+    _instanceCallback = (context, ref) {
+      Navigator.of(context).pop();
+      if (widget.instanceCallback != null) {
+        widget.instanceCallback!(context, ref);
+      }
     };
     return getSearchDialog(context, widget.tapCallback);
   }
@@ -146,6 +155,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
           return CentralStation.generateTile(
               currentNote: note,
               tapCallback: _noteCallback,
+              instanceCallback: _instanceCallback,
               notesViewType: viewType.List,
               initiallyExpanded: expandInitially.contains(note),
           );
