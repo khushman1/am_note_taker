@@ -196,8 +196,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   void _showCreateParentDialog(BuildContext context) {
     if (contentController.isSelectionOutOfAllChildren()) {
       _showParentChoiceDialog(context, null,
-              (note) =>
-              contentController.createChildFromSelection(context, note));
+          (note) => contentController.createInstanceFromNoteModel(
+              context, note));
     } else {
       CentralStation.showWarningDialog(
           context: context,
@@ -226,23 +226,34 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     ).then((value) => _showingDialog = false);
   }
 
-  void _showInstanceChoiceDialog(BuildContext context, NoteModel? selectedNote,
+  void _showInstanceChoiceDialog(BuildContext context,
       Function(NoteModel) noteCallback, Function(ParentReference) refCallback) {
-    _showingDialog = true;
-    showDialog(
-      context: context,
-      builder: (ctx) => NoteSearchDialog(
-        tapCallback: (ctx, note) {
-          noteCallback(note);
-          setState(() {});
-        },
-        selectedNote: selectedNote,
-        excludeListIds: [
-          _editableNote.id,  // Don't let parents be their own children
-          ..._editableNote.children.map((e) => e.parentId), // and children uniq
-        ],
-      ),
-    ).then((value) => _showingDialog = false);
+    if (contentController.isSelectionOutOfAllChildren()) {
+      _showingDialog = true;
+      showDialog(
+        context: context,
+        builder: (ctx) => NoteSearchDialog(
+          tapCallback: (ctx, note) {
+            noteCallback(note);
+            setState(() {});
+          },
+          instanceCallback: (ctx, ref) {
+            refCallback(ref);
+            setState(() {});
+          },
+          excludeListIds: [
+            _editableNote.id,  // Don't let parents be their own children
+            ..._editableNote.children.map((e) => e.parentId), // and children uniq
+          ],
+        ),
+      ).then((value) => _showingDialog = false);
+    } else {
+      CentralStation.showWarningDialog(
+          context: context,
+          title: const Text("Error"),
+          content: const Text("Cannot create an instance within an instance.")
+      );
+    }
   }
 
   Widget _pageTitle() {
@@ -298,7 +309,12 @@ class _NotePageState extends State<NotePage> implements NoteListener {
             horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
-            // onTap: () => _showCreateParentDialog(context),
+            onTap: () => _showInstanceChoiceDialog(
+              context,
+              (note) => contentController.createInstanceFromNoteModel(
+                  context, note),
+              (ref) => contentController.addCloneOfParentReference(context, ref)
+            ),
             child: const Icon(
               Icons.control_point_duplicate,
               color: CentralStation.fontColor,

@@ -132,6 +132,8 @@ class TextFieldMetadataController extends TextEditingController {
     text = beforeID + newChild.id + afterID;
   }
 
+  /// Returns true if the selection doesn't contain any existing instances. i.e.
+  /// it is safe to create a new instance
   bool isSelectionOutOfAllChildren() {
     return !(
         (selection.isCollapsed && isCollapsedSelectionWithinExistingChild()) ||
@@ -141,42 +143,48 @@ class TextFieldMetadataController extends TextEditingController {
 
   /// Creates a child depending on the text selection
   ///
-  /// Takes [newChild] as the ID to add to the new child section.
+  /// Takes [newChild] as the NoteModel to add to the new child section.
   ///
   /// Shows the child choice dialog, and if:
   ///   - collapsed on an empty line, or within text, it will create the
   ///     encapsulating format and move the cursor to the content-space in it
   ///   - text is selected, adds the encapsulating format around the selection
-  void createChildFromSelection(BuildContext context, NoteModel newChild) {
-    if (selection.isCollapsed) {
-      if (isCollapsedSelectionWithinExistingChild()) {
-        CentralStation.showWarningDialog(
-            context: context,
-            title: const Text("Error"),
-            content: const Text("Cannot create an instance within an instance.")
-        );
-      } else {
-        text = text.substring(0, selection.end) +
-            "'$startChildTag${newChild.id}' '$endChildTag'" +
-            text.substring(selection.end);
-        // selection = TextSelection.collapsed(offset: selection.end +
-        //     (startChildTag.length + 1) + newChild.id.length + 1);
-      }
-    } else {
-      // create child at the beginning and end of selection
-      if (isChildWithinSelectionRange()) {
-        CentralStation.showWarningDialog(
-            context: context,
-            title: const Text("Error"),
-            content: const Text("Cannot create an instance containing an"
-                " instance.")
-        );
-      } else {
-        text = text.substring(0, selection.start) +
-            "'$startChildTag${newChild.id}'" +
-            text.substring(selection.start, selection.end) + "'$endChildTag'";
-      }
+  ///   - if the text is empty, add title and content as content
+  void createInstanceFromNoteModel(BuildContext context, NoteModel newChild) {
+    if (newChild.id == _noteBeingEdited.id) {
+      CentralStation.showWarningDialog(
+          context: context,
+          title: const Text("Error!"),
+          content: const Text("Cannot create a child of the same Note."),
+      );
+      return;
     }
+    if (isSelectionOutOfAllChildren()) {
+      String middleBlock = text.substring(selection.start, selection.end);
+      if (middleBlock.isEmpty) {
+        middleBlock = newChild.title + "\n" +
+            newChild.content;
+      }
+      text = text.substring(0, selection.start) +
+          "'$startChildTag${newChild.id}'" +
+          middleBlock + "'$endChildTag'" +
+          text.substring(selection.end);
+    }
+  }
+
+  /// Clones a [ParentReference] into the current sequence, deleting the current
+  /// selection
+  void addCloneOfParentReference(BuildContext context, ParentReference ref) {
+    if (ref.parentId == _noteBeingEdited.id) {
+      CentralStation.showWarningDialog(
+        context: context,
+        title: const Text("Error!"),
+        content: const Text("Cannot create a child of the same Note."),
+      );
+      return;
+    }
+    text = text.substring(0, selection.start) + ref.completeMatch +
+        text.substring(selection.end);
   }
 
   /// Checks if a selected range contains a child section within it
