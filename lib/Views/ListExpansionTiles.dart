@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
+import 'NoteContentTextField/ParentReference.dart';
 
 /// Base component that creates a Tile that is extendable and shows the
 /// instances([Children]) of the [NoteModel] alongwith its content.
@@ -132,7 +135,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       childrenWidgets.add(contentWidget);
     }
     if (showChildren) {
-      childrenWidgets.add(_childrenPanel(context, note));
+      childrenWidgets.add(_instancePanel(context, note));
     }
     if (!showChildren && note.title.isEmpty) {
       // If not showing children and title is empty, remove the tile arrow
@@ -149,10 +152,9 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     );
   }
 
-  Widget _childrenPanel(BuildContext context, NoteModel note) {
-    // return Text(note.children.toString());
+  Widget _instancePanel(BuildContext context, NoteModel note) {
     List<Widget> childTiles =
-        note.children.map((n) => _childTile(context, n.parentId)).toList();
+        note.children.map((ref) => _instanceTile(context, ref)).toList();
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -168,17 +170,43 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     );
   }
 
-  Widget _childTile(BuildContext context, String noteID) {
+  Widget _instanceTile(BuildContext context, ParentReference ref) {
     NoteModel note = Provider.of<NoteSetModel>(context, listen: false).noteSet
-        .singleWhere((element) => element.id == noteID,
+        .singleWhere((element) => element.id == ref.parentId,
             orElse: () => NoteModel.createEmpty());
     if (note.isEmpty()) {
       note.markInvalid();
     }
-    String noteText = note.title;
-    if (note.title.isEmpty) {
-      noteText = note.content;
+    int headerLength = 16;
+    String noteHeader = note.title.substring(0, min(headerLength, note.title.length));
+    if (note.title.length > headerLength) {
+      noteHeader += "...";
     }
+    if (note.title.isEmpty) {
+      noteHeader = note.content.substring(0, min(headerLength, note.content.length));
+      if (note.content.length > headerLength) {
+        noteHeader += "...";
+      }
+    }
+    String noteSuffix = ref.content.trim().substring(0, min(headerLength, ref.content.trim().length));
+    TextStyle headerStyle = TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+        fontSize: TextUtils.determineFontSizeForTextLength(noteHeader.characters.length),
+        overflow: TextOverflow.ellipsis
+    );
+    TextStyle suffixStyle = TextStyle(
+        fontWeight: FontWeight.normal,
+        color: Colors.black54,
+        fontSize: TextUtils.determineFontSizeForTextLength(noteSuffix.characters.length),
+        overflow: TextOverflow.ellipsis
+    );
+    TextStyle arrowStyle = TextStyle(
+        fontWeight: FontWeight.normal,
+        color: Colors.grey,
+        fontSize: TextUtils.determineFontSizeForTextLength(noteSuffix.characters.length),
+        overflow: TextOverflow.ellipsis
+    );
     return Card(
       child: InkWell(
         onTap: () {
@@ -188,14 +216,12 @@ class _ListExpansionTileState extends State<ListExpansionTile>
         },
         splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
         child: ListTile(
-          title: Text(
-            noteText,
-            style: TextStyle(
-              fontWeight: (note.title.isNotEmpty) ? FontWeight.bold : FontWeight.normal,
-              fontSize: TextUtils.determineFontSizeForTextLength(noteText.characters.length),
-              overflow: TextOverflow.ellipsis
-            ),
-            maxLines: (note.title.isNotEmpty) ? 2 : 3,
+          title: RichText(
+            text: TextSpan(children: [
+              TextSpan(text: noteHeader, style: headerStyle),
+              TextSpan(text: ' > ', style: arrowStyle),
+              TextSpan(text: noteSuffix, style: suffixStyle),
+            ]),
           ),
         ),
       ),
