@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Models/DbBackupManager.dart';
 import 'package:am_note_taker/ViewControllers/NoteSearchDialog.dart';
 import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
@@ -32,6 +33,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   late Color noteColor;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
+  final _backupWriter = DbBackupManager();
 
   String _titleFromInitial = "";
   String _contentFromInitial = "";
@@ -42,6 +44,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   bool _showingBottomSheet = false;
   bool _showingDialog = false;
+  bool _triggerBackup = false;
 
   /// The timer variable responsible to call persistData function every 5 sec
   /// and cancel the timer when the page pops.
@@ -355,6 +358,10 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   void _persistData() {
     updateNoteObject();
+    if (_triggerBackup) {
+      _backupWriter.dbExportToBackupFolder();
+      _triggerBackup = false;
+    }
 
     // Provider.of<NoteSetModel>(context, listen: false)
     //     .saveNoteModelToDb(_editableNote);
@@ -372,7 +379,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     // }
   }
 
-/// This function will ne used to save the updated editing value of the note to
+/// This function will be used to save the updated editing value of the note to
 /// the local variables as user types
   void updateNoteObject() {
     if (_editableNote.content != contentController.text ||
@@ -385,6 +392,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         print("--------new note content\n${_editableNote
             .content}\n--------content end");
       }
+      _triggerBackup = true;
     } else if (kDebugMode) {
       print("No changes in note.");
     }
