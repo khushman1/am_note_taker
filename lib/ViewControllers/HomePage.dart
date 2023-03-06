@@ -1,4 +1,5 @@
 import 'package:am_note_taker/Models/NoteSetModel.dart';
+import 'package:am_note_taker/ViewControllers/ExpandableListPage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,7 @@ import 'StaggeredGridPage.dart';
 import 'NotePage.dart';
 import '../Models/Utility.dart';
 
-enum viewType { List, Staggered }
+enum viewType { list, staggered }
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,7 +22,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    notesViewType = viewType.List;
+    notesViewType = viewType.list;
     super.initState();
   }
 
@@ -52,11 +53,19 @@ class _HomePageState extends State<HomePage> {
     if (kDebugMode) {
       print("HomePage body notesViewType: $notesViewType");
     }
-    return StaggeredGridPage(
-      notesViewType: notesViewType,
-      tapCallback: (context, note) => Navigator.push(
-        context, MaterialPageRoute(builder: (ctx) => NotePage(note))
-      ),
+    if (notesViewType == viewType.staggered) {
+      return StaggeredGridPage(
+        notesViewType: notesViewType,
+        tapCallback: (context, note) => Navigator.push(
+            context, MaterialPageRoute(builder: (ctx) => NotePage(note))
+        ),
+      );
+    }
+    return ExpandableListPage(
+        notesViewType: notesViewType,
+        tapCallback: (context, note) => Navigator.push(
+            context, MaterialPageRoute(builder: (ctx) => NotePage(note))
+        ),
     );
   }
 
@@ -84,10 +93,10 @@ class _HomePageState extends State<HomePage> {
 
   void _toggleViewType() {
     setState(() {
-      if (notesViewType == viewType.List) {
-        notesViewType = viewType.Staggered;
+      if (notesViewType == viewType.list) {
+        notesViewType = viewType.staggered;
       } else {
-        notesViewType = viewType.List;
+        notesViewType = viewType.list;
       }
     });
   }
@@ -100,7 +109,7 @@ class _HomePageState extends State<HomePage> {
           child: GestureDetector(
             onTap: () => _toggleViewType(),
             child: Icon(
-              notesViewType == viewType.List
+              notesViewType == viewType.list
                   ? Icons.developer_board
                   : Icons.view_headline,
               color: CentralStation.fontColor,

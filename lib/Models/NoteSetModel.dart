@@ -15,6 +15,10 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   LinkedHashSet<NoteModel> _allNotesInQueryResult = LinkedHashSet();
   LinkedHashSet<NoteModel> get noteSet => _allNotesInQueryResult;
   List<NoteModel> get notesList => _allNotesInQueryResult.toList();
+  List<NoteModel> get conceptsNotesList => _allNotesInQueryResult.where(
+          (note) => note.children.isEmpty).toList();
+  List<NoteModel> get instancesNotesList => _allNotesInQueryResult.where(
+          (note) => note.children.isNotEmpty).toList();
 
   NoteSetModel() {
     retrieveNoteSetFromDatabase();

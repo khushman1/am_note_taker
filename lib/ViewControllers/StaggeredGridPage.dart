@@ -41,19 +41,18 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     GlobalKey _stagKey = GlobalKey();
 
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
-      var gridViewChildren = noteSetModel.notesList.reversed.map(
-              (note) =>
-                  CentralStation.generateTile(
-                    currentNote: note,
-                    notesViewType: widget.notesViewType,
-                    tapCallback: widget.tapCallback,
-                    instanceCallback: (ctx, ref) => widget.tapCallback!(
-                        ctx,
-                        noteSetModel.noteSet.firstWhere(
-                                (element) => element.id == ref.parentId)
-                    ),
-                    showChildren: true
-                  )
+      var gridViewChildren = noteSetModel.notesList.reversed.map((note) =>
+          CentralStation.generateTile(
+              currentNote: note,
+              notesViewType: widget.notesViewType,
+              tapCallback: widget.tapCallback,
+              instanceCallback: (ctx, ref) => widget.tapCallback!(
+                  ctx,
+                  noteSetModel.noteSet.firstWhere(
+                          (element) => element.id == ref.parentId)
+              ),
+              showChildren: true
+          )
       ).toList();
       return Padding(
         padding: _paddingForView(context),
@@ -70,7 +69,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
   }
 
   int _colForStaggeredView(BuildContext context) {
-    if (widget.notesViewType == viewType.List) {
+    if (widget.notesViewType == viewType.list) {
       return 1;
     }
     // for width larger than 600 on grid mode, return 3 irrelevant of the orientation to accommodate more notes horizontally

@@ -156,7 +156,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
               currentNote: note,
               tapCallback: _noteCallback,
               instanceCallback: _instanceCallback,
-              notesViewType: viewType.List,
+              notesViewType: viewType.list,
               initiallyExpanded: expandInitially.contains(note),
           );
         }

@@ -52,7 +52,7 @@ class CentralStation {
       print("Generating ${currentNote.id} ${currentNote.title} tile");
     }
 
-    if (notesViewType == viewType.Staggered) {
+    if (notesViewType == viewType.staggered) {
       return MyStaggeredTile(
         note: currentNote,
         tapCallback: tapCallback,
