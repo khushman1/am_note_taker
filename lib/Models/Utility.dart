@@ -45,6 +45,7 @@ class CentralStation {
     required viewType notesViewType,
     Function(BuildContext, NoteModel)? tapCallback,
     Function(BuildContext, ParentReference)? instanceCallback,
+    Function(BuildContext, ParentReference)? childCallback,
     bool showChildren = true,
     bool initiallyExpanded = false,
   }) {
@@ -62,6 +63,7 @@ class CentralStation {
         note: currentNote,
         tapCallback: tapCallback,
         instanceCallback: instanceCallback,
+        childCallback: childCallback,
         showChildren: showChildren,
         initiallyExpanded: initiallyExpanded,
       );

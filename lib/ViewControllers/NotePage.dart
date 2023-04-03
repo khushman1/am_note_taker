@@ -187,10 +187,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
   void _showReplaceParentDialog(BuildContext context, ParentReference ref) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
-    NoteModel? noteForMatch = noteSet.noteSet.singleWhereOrNull(
-        (element) => element.id == ref.parentId);
+    NoteModel? noteForMatch = noteSet.noteMap[ref.parent.id];
     if (kDebugMode) {
-      print("Child ID: ${ref.parentId} ${noteForMatch?.title}");
+      print("Child ID: ${ref.parent.id} ${noteForMatch?.title}");
     }
     _showParentChoiceDialog(context, noteForMatch,
         (note) => contentController.replaceMatchIDWithNewChildID(ref, note));
@@ -223,7 +222,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         selectedNote: selectedNote,
         excludeListIds: [
           _editableNote.id,  // Don't let parents be their own children
-          ..._editableNote.children.map((e) => e.parentId), // and children uniq
+          ..._editableNote.children.map((e) => e.parent.id), // and children uniq
         ],
       ),
     ).then((value) => _showingDialog = false);
@@ -244,9 +243,13 @@ class _NotePageState extends State<NotePage> implements NoteListener {
             refCallback(ref);
             setState(() {});
           },
+          childCallback: (ctx, ref) {
+            refCallback(ref);
+            setState(() {});
+          },
           excludeListIds: [
             _editableNote.id,  // Don't let parents be their own children
-            ..._editableNote.children.map((e) => e.parentId), // and children uniq
+            ..._editableNote.children.map((e) => e.parent.id), // and children uniq
           ],
         ),
       ).then((value) => _showingDialog = false);

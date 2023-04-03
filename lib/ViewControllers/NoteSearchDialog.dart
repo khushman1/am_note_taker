@@ -16,6 +16,7 @@ class NoteSearchDialog extends StatefulWidget {
   final List<String>? excludeListIds;
   final bool? searchInstances;
   final Function(BuildContext, ParentReference)? instanceCallback;
+  final Function(BuildContext, ParentReference)? childCallback;
 
   const NoteSearchDialog(
       {
@@ -24,6 +25,7 @@ class NoteSearchDialog extends StatefulWidget {
         this.excludeListIds,
         this.searchInstances,
         this.instanceCallback,
+        this.childCallback,
         Key? key
       }) : super(key: key);
 
@@ -37,6 +39,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
   String _searchString = "";
   late Function(BuildContext, NoteModel) _noteCallback;
   late Function(BuildContext, ParentReference) _instanceCallback;
+  late Function(BuildContext, ParentReference) _childCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +51,12 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
       Navigator.of(context).pop();
       if (widget.instanceCallback != null) {
         widget.instanceCallback!(context, ref);
+      }
+    };
+    _childCallback = (context, ref) {
+      Navigator.of(context).pop();
+      if (widget.childCallback != null) {
+        widget.childCallback!(context, ref);
       }
     };
     return getSearchDialog(context, widget.tapCallback);
@@ -156,6 +165,7 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
               currentNote: note,
               tapCallback: _noteCallback,
               instanceCallback: _instanceCallback,
+              childCallback: _childCallback,
               notesViewType: viewType.list,
               initiallyExpanded: expandInitially.contains(note),
           );

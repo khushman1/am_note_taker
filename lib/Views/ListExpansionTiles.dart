@@ -16,6 +16,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   final NoteModel note;
   final Function(BuildContext, NoteModel)? tapCallback;
   final Function(BuildContext, ParentReference)? instanceCallback;
+  final Function(BuildContext, ParentReference)? childCallback;
   final bool initiallyExpanded;
   final bool showChildren;
   final int contentMaxLines;
@@ -26,6 +27,7 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
         required this.note,
         this.tapCallback,
         this.instanceCallback,
+        this.childCallback,
         this.initiallyExpanded = false,
         this.showChildren = false,
         this.contentMaxLines = 3,
@@ -60,7 +62,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
         context: context,
         note: widget.note,
         initiallyExpanded: widget.initiallyExpanded,
-        showChildren: widget.showChildren
+        showChildrenNInstances: widget.showChildren
       ),
       color: widget.note.noteColour,
       shadowColor: widget.note.noteColour,
@@ -71,7 +73,6 @@ class _ListExpansionTileState extends State<ListExpansionTile>
   void dispose() {
     widget.note.removeListener(noteListener);
     super.dispose();
-
   }
 
   void _noteOpened(BuildContext ctx) {
@@ -84,7 +85,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
         required BuildContext context,
         required NoteModel note,
         bool initiallyExpanded = false,
-        bool showChildren = false,
+        bool showChildrenNInstances = false,
       }) {
     Widget? contentWidget;
     List<Widget> childrenWidgets = [];
@@ -134,10 +135,10 @@ class _ListExpansionTileState extends State<ListExpansionTile>
       );
       childrenWidgets.add(contentWidget);
     }
-    if (showChildren) {
-      childrenWidgets.add(_instancePanel(context, note));
+    if (showChildrenNInstances) {
+      childrenWidgets.add(_childNInstancePanel(context, note));
     }
-    if (!showChildren && note.title.isEmpty) {
+    if (!showChildrenNInstances && note.title.isEmpty) {
       // If not showing children and title is empty, remove the tile arrow
       return Padding(
         child: titleWidget,
@@ -152,28 +153,47 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     );
   }
 
-  Widget _instancePanel(BuildContext context, NoteModel note) {
-    List<Widget> childTiles =
-        note.children.map((ref) => _instanceTile(context, ref)).toList();
+  Widget _childNInstancePanel(BuildContext context, NoteModel note) {
+    List<Widget> children = [];
+    if (note.instances.isNotEmpty) {
+      List<Widget> instanceTiles = note.instances.map(
+              (e) => _instanceTile(e)).toList();
+      children.add(const Text("Instances"));
+      children.add(ListView(children: instanceTiles, shrinkWrap: true));
+    }
+    if (note.children.isNotEmpty) {
+      List<Widget> childTiles = note.children.map(
+              (e) => _childTile(e)).toList();
+      children.add(const Text("Children"));
+      children.add(ListView(children: childTiles, shrinkWrap: true));
+    }
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Instances"),
-          ListView(
-            children: childTiles,
-            shrinkWrap: true,
-          )
-        ],
+        children: children,
       ),
     );
   }
 
-  Widget _instanceTile(BuildContext context, ParentReference ref) {
-    NoteModel note = Provider.of<NoteSetModel>(context, listen: false).noteSet
-        .singleWhere((element) => element.id == ref.parentId,
-            orElse: () => NoteModel.createEmpty());
+  Widget _instanceTile(ParentReference ref) {
+    return _createdLinkedTile(ref, ref.child, () {
+      if (widget.instanceCallback != null && !ref.child.isInvalid()) {
+        widget.instanceCallback!(context, ref);
+      }
+    });
+  }
+
+  Widget _childTile(ParentReference ref) {
+    return _createdLinkedTile(ref, ref.parent, () {
+      if (widget.childCallback != null && !ref.parent.isInvalid()) {
+        widget.childCallback!(context, ref);
+      }
+    });
+  }
+
+  Widget _createdLinkedTile(ParentReference ref,
+      NoteModel note, Function onTap) {
     if (note.isEmpty()) {
       note.markInvalid();
     }
@@ -209,11 +229,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     );
     return Card(
       child: InkWell(
-        onTap: () {
-          if (widget.instanceCallback != null && !note.isInvalid()) {
-            widget.instanceCallback!(context, ref);
-          }
-        },
+        onTap: () => onTap(),
         splashColor: ColorUtils.invert(note.noteColour).withAlpha(30),
         child: ListTile(
           title: RichText(

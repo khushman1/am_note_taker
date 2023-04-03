@@ -48,8 +48,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
               tapCallback: widget.tapCallback,
               instanceCallback: (ctx, ref) => widget.tapCallback!(
                   ctx,
-                  noteSetModel.noteSet.firstWhere(
-                          (element) => element.id == ref.parentId)
+                  noteSetModel.noteMap[ref.parent.id]!
               ),
               showChildren: true
           )
@@ -62,7 +61,7 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
           mainAxisSpacing: 2,
           crossAxisCount: _colForStaggeredView(context),
           children: gridViewChildren,
-          staggeredTiles: _tilesForView(noteSetModel.noteSet.length),
+          staggeredTiles: _tilesForView(noteSetModel.noteMap.length),
         ),
       );
     });

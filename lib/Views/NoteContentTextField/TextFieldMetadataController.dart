@@ -1,8 +1,13 @@
+import 'dart:collection';
+
 import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/Utility.dart';
 import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../Models/NoteSetModel.dart';
 
 /// [TextFieldMetadataController] is a [TextEditingController] that manages
 /// children in between notes. On every [buildTextSpan], the children are
@@ -33,12 +38,15 @@ class TextFieldMetadataController extends TextEditingController {
       TextStyle? style,
       bool? withComposing
   }) {
+    HashMap<String, NoteModel> noteMap =
+        Provider.of<NoteSetModel>(context, listen: false).noteMap;
     List<InlineSpan> childrenSpans = [];
     // splitMapJoin is a bit tricky here but i found it very handy for
     // populating children list
     text.splitMapJoin(childMatchRegex,
       onMatch: (Match match) {
-        ParentReference child = ParentReference.fromMatch(match);
+        ParentReference child = ParentReference.fromMatch(noteMap, match,
+            _noteBeingEdited);
         _noteBeingEdited.addChild(newChildRef: child, isBuilding: true);
         _temporaryChildrenSet.remove(child);
         childrenSpans.add(
@@ -54,7 +62,7 @@ class TextFieldMetadataController extends TextEditingController {
                   ),
                 ),
                 TextSpan(
-                  text: child.parentId + "'",
+                  text: child.parent.id + "'",
                   style: style?.merge(
                       TextStyle(
                         backgroundColor: Colors.pink.withOpacity(0.5)
@@ -102,7 +110,7 @@ class TextFieldMetadataController extends TextEditingController {
       for (ParentReference reference in _noteBeingEdited.children) {
         if (selection.end >= reference.begin && selection.end < reference.end) {
           int textStart = reference.begin + (startChildTag.length + 1) +
-              reference.parentId.length + 1; // @#@!id!
+              reference.parent.id.length + 1; // @#@!id!
           if (selection.end < textStart ||
               selection.end > textStart + reference.content.length) {
             if (kDebugMode) {
@@ -128,7 +136,7 @@ class TextFieldMetadataController extends TextEditingController {
     String beforeID = text.substring(0,
         ref.begin + (startChildTag.length + 1));
     String afterID = text.substring(
-        ref.begin + (startChildTag.length + 1) + ref.parentId.length);
+        ref.begin + (startChildTag.length + 1) + ref.parent.id.length);
     text = beforeID + newChild.id + afterID;
   }
 
@@ -175,7 +183,7 @@ class TextFieldMetadataController extends TextEditingController {
   /// Clones a [ParentReference] into the current sequence, deleting the current
   /// selection
   void addCloneOfParentReference(BuildContext context, ParentReference ref) {
-    if (ref.parentId == _noteBeingEdited.id) {
+    if (ref.parent.id == _noteBeingEdited.id) {
       CentralStation.showWarningDialog(
         context: context,
         title: const Text("Error!"),

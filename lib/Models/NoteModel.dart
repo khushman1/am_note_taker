@@ -63,7 +63,7 @@ class NoteModel extends ChangeNotifier {
     }
     _children.add(newChildRef);
     if (notify && !isBuilding) {
-        notifyListeners();
+      notifyListeners();
     }
   }
   void removeChild({
@@ -71,6 +71,33 @@ class NoteModel extends ChangeNotifier {
     bool isBuilding = false
   }) {
     if (_children.remove(child) && !isBuilding) {
+      child.destroy();
+      notifyListeners();
+    }
+  }
+
+  final Set<ParentReference> _instances = {};
+  Set<ParentReference> get instances => _instances;
+  void addInstance({
+    required ParentReference newInstanceRef,
+    bool isBuilding = false
+  }) {
+    bool notify = true;
+    if (_instances.contains(newInstanceRef)) {
+      // Removing and readding it resets the other elements in the reference
+      _instances.remove(newInstanceRef);
+      notify = false; // This makes it not notify
+    }
+    _instances.add(newInstanceRef);
+    if (notify && !isBuilding) {
+      notifyListeners();
+    }
+  }
+  void removeInstance({
+    required ParentReference instance,
+    bool isBuilding = false
+  }) {
+    if (_instances.remove(instance) && !isBuilding) {
       notifyListeners();
     }
   }

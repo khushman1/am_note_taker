@@ -12,12 +12,12 @@ import 'NotesDBHandler.dart';
 
 class NoteSetModel extends ChangeNotifier implements NoteListener {
   NotesDBHandler noteDB = NotesDBHandler();
-  LinkedHashSet<NoteModel> _allNotesInQueryResult = LinkedHashSet();
-  LinkedHashSet<NoteModel> get noteSet => _allNotesInQueryResult;
-  List<NoteModel> get notesList => _allNotesInQueryResult.toList();
-  List<NoteModel> get conceptsNotesList => _allNotesInQueryResult.where(
+  HashMap<String, NoteModel> _allNotesInQueryResult = HashMap();
+  HashMap<String, NoteModel> get noteMap => _allNotesInQueryResult;
+  List<NoteModel> get notesList => _allNotesInQueryResult.values.toList();
+  List<NoteModel> get conceptsNotesList => _allNotesInQueryResult.values.where(
           (note) => note.children.isEmpty).toList();
-  List<NoteModel> get instancesNotesList => _allNotesInQueryResult.where(
+  List<NoteModel> get instancesNotesList => _allNotesInQueryResult.values.where(
           (note) => note.children.isNotEmpty).toList();
 
   NoteSetModel() {
@@ -25,8 +25,8 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   }
 
   void _reorderJustModifiedNoteModel(NoteModel note) {
-    if (_allNotesInQueryResult.remove(note)) {
-      _allNotesInQueryResult.add(note);
+    if (_allNotesInQueryResult.remove(note.id) != null) {
+      _allNotesInQueryResult[note.id] = note;
       notifyListeners();
     }
   }
@@ -57,7 +57,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
   NoteModel addEmptyNoteModel() {
     // Note.freshNoteUUID id indicates the note is not new
     var emptyNote = _createNewNoteModel();
-    _allNotesInQueryResult.add(emptyNote);
+    _allNotesInQueryResult[emptyNote.id] = emptyNote;
     notifyListeners();
     return emptyNote;
   }
@@ -87,7 +87,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
       content: sourceNote.content,
       noteColor: sourceNote.noteColour
     );
-    _allNotesInQueryResult.add(copy);
+    _allNotesInQueryResult[copy.id] = copy;
 
     await saveNoteModelToDb(copy);
     notifyListeners();
@@ -100,21 +100,17 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
 
   /// Loads all [NoteModel]s from the database into the [NoteSetModel] and
   /// populates children ids for each [NoteModel]
-  LinkedHashSet<NoteModel> readDatabaseNotes(List<Map<String, dynamic>>? value)
+  HashMap<String, NoteModel> readDatabaseNotes(
+      List<Map<String, dynamic>>? value)
   {
     HashMap<String, NoteModel> noteIdMap = HashMap();
-    LinkedHashSet<NoteModel> noteSet = LinkedHashSet();
     if (value != null) {
       for (var e in value) {
         NoteModel currentNote = convertMapToNote(e);
-        noteSet.add(currentNote);
         noteIdMap[currentNote.id] = currentNote;
       }
-      if (kDebugMode) {
-        print("Values loaded successfully. $noteSet");
-      }
 
-      for (NoteModel note in noteSet) {
+      for (NoteModel note in noteIdMap.values) {
         Iterable<Match> matches = TextFieldMetadataController.childMatchRegex
             .allMatches(note.content);
         if (kDebugMode) {
@@ -123,7 +119,8 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         }
         for (Match match in matches) {
           if (match[1] != null && noteIdMap.containsKey(match[1])) {
-            note.addChild(newChildRef: ParentReference.fromMatch(match));
+            note.addChild(newChildRef: ParentReference.fromMatch(noteIdMap,
+                match, note, isBuilding: true));
           }
         }
       }
@@ -131,7 +128,7 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
         print("Values referenced successfully.");
       }
     }
-    return noteSet;
+    return noteIdMap;
   }
 
   /// Create [NoteModel] from an individual [NotesDBHandler] row (as a [Map])

@@ -45,11 +45,8 @@ class _ExpandableListPageState extends State<ExpandableListPage> {
             notesViewType: widget.notesViewType,
             tapCallback: widget.tapCallback,
             instanceCallback: (ctx, ref) =>
-                widget.tapCallback!(
-                    ctx,
-                    noteSetModel.noteSet.firstWhere(
-                            (element) => element.id == ref.parentId)
-                ),
+                widget.tapCallback!(ctx, ref.child),
+            childCallback: (ctx, ref) => widget.tapCallback!(ctx, ref.parent),
             showChildren: true
         );
       }).toList();
@@ -60,11 +57,8 @@ class _ExpandableListPageState extends State<ExpandableListPage> {
             notesViewType: widget.notesViewType,
             tapCallback: widget.tapCallback,
             instanceCallback: (ctx, ref) =>
-                widget.tapCallback!(
-                    ctx,
-                    noteSetModel.noteSet.firstWhere(
-                            (element) => element.id == ref.parentId)
-                ),
+                widget.tapCallback!(ctx, ref.child),
+            childCallback: (ctx, ref) => widget.tapCallback!(ctx, ref.parent),
             showChildren: true
         );
       }).toList();
