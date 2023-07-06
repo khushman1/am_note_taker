@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
-import 'package:collection/collection.dart';
 import 'dart:async';
 
 import '../Models/NoteModel.dart';
@@ -94,6 +93,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         !_showingBottomSheet && !_showingDialog) {
       FocusScope.of(context).requestFocus(_titleFocus);
     }
+    _editableNote.removeListener(noteListener);
     _editableNote.addListener(noteListener);
 
     return WillPopScope(

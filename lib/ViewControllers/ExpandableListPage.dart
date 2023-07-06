@@ -1,5 +1,6 @@
 import 'package:am_note_taker/Models/Utility.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
@@ -38,6 +39,9 @@ class _ExpandableListPageState extends State<ExpandableListPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
+      if (kDebugMode) {
+        print("ExpandableListPage: NoteSetModel consumed");
+      }
       List<NoteTile> conceptsChildren = noteSetModel.conceptsNotesList.reversed
           .map((note) {
         return CentralStation.generateTile(

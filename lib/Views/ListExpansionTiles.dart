@@ -1,10 +1,8 @@
 import 'dart:math';
 
-import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 import 'NoteContentTextField/ParentReference.dart';
@@ -55,6 +53,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
   @override
   Widget build(BuildContext context) {
     _fontSize = TextUtils.determineFontSizeForNoteModel(widget.note);
+    widget.note.removeListener(noteListener);
     widget.note.addListener(noteListener);
 
     return Card(

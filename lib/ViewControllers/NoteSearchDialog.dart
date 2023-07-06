@@ -4,6 +4,7 @@ import 'package:am_note_taker/ViewControllers/HomePage.dart';
 import 'package:am_note_taker/Views/ListExpansionTiles.dart';
 import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
 import 'package:am_note_taker/Views/NoteTile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
@@ -130,6 +131,9 @@ class _NoteSearchDialogState extends State<NoteSearchDialog> {
   
   Widget _dialogListView(BuildContext context) {
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
+      if (kDebugMode) {
+        print("NoteSearchDialog: NoteSetModel consumed");
+      }
       List<NoteModel> expandInitially = List.empty(growable: true);
       Iterable<NoteModel> selectedNotes = noteSetModel.notesList.reversed.where(
         (note) {

@@ -1,5 +1,6 @@
 import 'package:am_note_taker/Models/Utility.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +42,9 @@ class _StaggeredGridPageState extends State<StaggeredGridPage> {
     GlobalKey _stagKey = GlobalKey();
 
     return Consumer<NoteSetModel>(builder: (context, noteSetModel, child) {
+      if (kDebugMode) {
+        print("StaggeredGridPage: NoteSetModel consumed");
+      }
       var gridViewChildren = noteSetModel.notesList.reversed.map((note) =>
           CentralStation.generateTile(
               currentNote: note,

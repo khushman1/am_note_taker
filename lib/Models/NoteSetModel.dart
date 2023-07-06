@@ -71,13 +71,15 @@ class NoteSetModel extends ChangeNotifier implements NoteListener {
     newNote.title = title;
     newNote.content = content;
     newNote.noteColour = noteColor;
-    newNote.addListener(() {
+    noteListener() {
       if (kDebugMode) {
         print("Changed ${newNote.id} ${newNote.title}");
       }
       saveNoteModelToDb(newNote);
       _reorderJustModifiedNoteModel(newNote);
-    });
+    }
+    newNote.removeListener(noteListener);
+    newNote.addListener(noteListener);
     return newNote;
   }
 
