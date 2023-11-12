@@ -1,7 +1,6 @@
 import 'package:am_note_taker/Models/DbBackupManager.dart';
 import 'package:am_note_taker/ViewControllers/NoteSearchDialog.dart';
 import 'package:am_note_taker/Views/NoteContentTextField/ParentReference.dart';
-import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,20 +25,18 @@ class NotePage extends StatefulWidget {
   _NotePageState createState() => _NotePageState();
 }
 
-class _NotePageState extends State<NotePage> implements NoteListener {
+class _NotePageState extends State<NotePage> {
   final _titleController = TextEditingController();
   late final TextFieldMetadataController contentController;
-  late Color noteColor;
   final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
   final _backupWriter = DbBackupManager();
+  late final NoteModel _editableNote;
 
   String _titleFromInitial = "";
   String _contentFromInitial = "";
   late Color _colorFromInitial;
   DateTime _lastEditedForUndo = DateTime.now();
-
-  late NoteModel _editableNote;
 
   bool _showingBottomSheet = false;
   bool _showingDialog = false;
@@ -57,9 +54,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     _editableNote = widget.noteInEditing;
     _titleController.text = _editableNote.title;
     contentController = TextFieldMetadataController(_editableNote,
-            (ref) => _showReplaceParentDialog(context, ref));
+            (ref) => _showReplaceParentDialog(context, _editableNote, ref));
     contentController.text = _editableNote.content;
-    noteColor = _editableNote.noteColour;
     _lastEditedForUndo = widget.noteInEditing.dateLastEdited;
 
     _titleFromInitial = widget.noteInEditing.title;
@@ -80,36 +76,31 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   }
 
   @override
-  void noteListener() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_editableNote.id == NoteModel.freshNoteUUID &&
-        _editableNote.title.isEmpty && _editableNote.content.isEmpty &&
-        !_showingBottomSheet && !_showingDialog) {
-      FocusScope.of(context).requestFocus(_titleFocus);
-    }
-    _editableNote.removeListener(noteListener);
-    _editableNote.addListener(noteListener);
-
     return WillPopScope(
-      child: Scaffold(
-        key: _globalKey,
-        appBar: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          leading: const BackButton(
-            color: Colors.black,
-          ),
-          actions: _notePageActions(context),
-          elevation: 1,
-          backgroundColor: noteColor,
-          title: _pageTitle(),
-        ),
-        body: _body(context),
+      child: Consumer<NoteModel> (
+        builder:(_, _editableNote, __) {
+          if (_editableNote.id == NoteModel.freshNoteUUID &&
+              _editableNote.title.isEmpty && _editableNote.content.isEmpty &&
+              !_showingBottomSheet && !_showingDialog) {
+            FocusScope.of(context).requestFocus(_titleFocus);
+          }
+
+          return Scaffold(
+            key: _globalKey,
+            appBar: AppBar(
+              systemOverlayStyle: SystemUiOverlayStyle.light,
+              leading: const BackButton(
+                color: Colors.black,
+              ),
+              actions: _notePageActions(context, _editableNote),
+              elevation: 1,
+              backgroundColor: _editableNote.noteColour,
+              title: _pageTitle(_editableNote),
+            ),
+            body: _body(context, _editableNote),
+          );
+        },
       ),
       onWillPop: _readyToPop,
     );
@@ -118,13 +109,12 @@ class _NotePageState extends State<NotePage> implements NoteListener {
   @override
   void dispose() {
     _persistenceTimer?.cancel();
-    _editableNote.removeListener(noteListener);
     super.dispose();
   }
 
-  Widget _body(BuildContext context) {
+  Widget _body(BuildContext context, NoteModel note) {
     return Container(
-        color: noteColor,
+        color: note.noteColour,
         padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
         child: SafeArea(
           child: Column(
@@ -136,7 +126,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                   padding: const EdgeInsets.only(
                       left: 5, right: 5, top: 10, bottom: 5),
                   child: TextField(
-                    onChanged: (str) => {updateNoteObject()},
+                    // onChanged: (str) => {updateNoteObject()},
                     maxLines: null,
                     controller: _titleController,
                     focusNode: _titleFocus,
@@ -159,7 +149,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
                   child: Container(
                       padding: const EdgeInsets.all(5),
                       child: TextField(
-                        onChanged: (str) => updateNoteObject(),
+                        // onChanged: (str) => updateNoteObject(),
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
                         // line limit extendable later
@@ -185,19 +175,20 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         ));
   }
 
-  void _showReplaceParentDialog(BuildContext context, ParentReference ref) {
+  void _showReplaceParentDialog(BuildContext context, NoteModel baseNote,
+      ParentReference ref) {
     NoteSetModel noteSet = Provider.of<NoteSetModel>(context, listen: false);
     NoteModel? noteForMatch = noteSet.noteMap[ref.parent.id];
     if (kDebugMode) {
       print("Child ID: ${ref.parent.id} ${noteForMatch?.title}");
     }
-    _showParentChoiceDialog(context, noteForMatch,
+    _showParentChoiceDialog(context, baseNote, noteForMatch,
         (note) => contentController.replaceMatchIDWithNewChildID(ref, note));
   }
 
-  void _showCreateParentDialog(BuildContext context) {
+  void _showCreateParentDialog(BuildContext context, NoteModel baseNote) {
     if (contentController.isSelectionOutOfAllChildren()) {
-      _showParentChoiceDialog(context, null,
+      _showParentChoiceDialog(context, baseNote, null,
           (note) => contentController.createInstanceFromNoteModel(
               context, note));
     } else {
@@ -209,8 +200,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     }
   }
 
-  void _showParentChoiceDialog(BuildContext context, NoteModel? selectedNote,
-      Function(NoteModel) callback) {
+  void _showParentChoiceDialog(BuildContext context, NoteModel baseNote,
+      NoteModel? selectedNote, Function(NoteModel) callback) {
     _showingDialog = true;
     showDialog(
       context: context,
@@ -221,14 +212,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
         },
         selectedNote: selectedNote,
         excludeListIds: [
-          _editableNote.id,  // Don't let parents be their own children
-          ..._editableNote.children.map((e) => e.parent.id), // and children uniq
+          baseNote.id,  // Don't let parents be their own children
+          ...baseNote.children.map((e) => e.parent.id), // and children uniq
         ],
       ),
     ).then((value) => _showingDialog = false);
   }
 
-  void _showInstanceChoiceDialog(BuildContext context,
+  void _showInstanceChoiceDialog(BuildContext context, NoteModel baseNote,
       Function(NoteModel) noteCallback, Function(ParentReference) refCallback) {
     if (contentController.isSelectionOutOfAllChildren()) {
       _showingDialog = true;
@@ -248,8 +239,8 @@ class _NotePageState extends State<NotePage> implements NoteListener {
             setState(() {});
           },
           excludeListIds: [
-            _editableNote.id,  // Don't let parents be their own children
-            ..._editableNote.children.map((e) => e.parent.id), // and children uniq
+            baseNote.id,  // Don't let parents be their own children
+            ...baseNote.children.map((e) => e.parent.id), // and children uniq
           ],
         ),
       ).then((value) => _showingDialog = false);
@@ -262,14 +253,14 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     }
   }
 
-  Widget _pageTitle() {
-    return Text(_editableNote.id == NoteModel.freshNoteUUID ?
+  Widget _pageTitle(NoteModel note) {
+    return Text(note.id == NoteModel.freshNoteUUID ?
         "New Note" : "Edit Note");
   }
 
-  List<Widget> _notePageActions(BuildContext context) {
+  List<Widget> _notePageActions(BuildContext context, NoteModel baseNote) {
     List<Widget> actions = [];
-    if (_editableNote.id != NoteModel.freshNoteUUID) {
+    if (baseNote.id != NoteModel.freshNoteUUID) {
       actions.add(Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: NotePage.noteActionPadding),
@@ -302,7 +293,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
             horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
-            onTap: () => _showCreateParentDialog(context),
+            onTap: () => _showCreateParentDialog(context, _editableNote),
             child: const Icon(
               Icons.add_link,
               color: CentralStation.fontColor,
@@ -317,6 +308,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
           child: GestureDetector(
             onTap: () => _showInstanceChoiceDialog(
               context,
+              baseNote,
               (note) => contentController.createInstanceFromNoteModel(
                   context, note),
               (ref) => contentController.addCloneOfParentReference(context, ref)
@@ -333,7 +325,7 @@ class _NotePageState extends State<NotePage> implements NoteListener {
             horizontal: NotePage.noteActionPadding),
         child: InkWell(
           child: GestureDetector(
-            onTap: () => bottomSheet(context),
+            onTap: () => bottomSheet(context, _editableNote),
             child: const Icon(
               Icons.more_vert,
               color: CentralStation.fontColor,
@@ -345,22 +337,22 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     return actions;
   }
 
-  void bottomSheet(BuildContext context) {
+  void bottomSheet(BuildContext context, NoteModel baseNote) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext ctx) {
           _showingBottomSheet = true;
           return MoreOptionsSheet(
-            color: noteColor,
+            color: baseNote.noteColour,
             callBackColorTapped: _changeColor,
             callBackOptionTapped: bottomSheetOptionTappedHandler,
-            dateLastEdited: _editableNote.dateLastEdited,
+            dateLastEdited: baseNote.dateLastEdited,
           );
         }).then((value) => _showingBottomSheet = false);
   }
 
   void _persistData() {
-    updateNoteObject();
+    // updateNoteObject();
     if (_triggerBackup) {
       _backupWriter.dbExportToBackupFolder();
       _triggerBackup = false;
@@ -384,22 +376,22 @@ class _NotePageState extends State<NotePage> implements NoteListener {
 
 /// This function will be used to save the updated editing value of the note to
 /// the local variables as user types
-  void updateNoteObject() {
-    if (_editableNote.content != contentController.text ||
-        _editableNote.title != _titleController.text ||
-        _editableNote.noteColour != noteColor) {
-      _editableNote.content = contentController.text;
-      _editableNote.title = _titleController.text;
-      _editableNote.noteColour = noteColor;
-      if (kDebugMode) {
-        print("--------new note content\n${_editableNote
-            .content}\n--------content end");
-      }
-      _triggerBackup = true;
-    } else if (kDebugMode) {
-      print("No changes in note.");
-    }
-  }
+//   void updateNoteObject(NoteModel _editableNote) {
+//     if (_editableNote.content != contentController.text ||
+//         _editableNote.title != _titleController.text ||
+//         _editableNote.noteColour != noteColor) {
+//       _editableNote.content = contentController.text;
+//       _editableNote.title = _titleController.text;
+//       _editableNote.noteColour = noteColor;
+//       if (kDebugMode) {
+//         print("--------new note content\n${_editableNote
+//             .content}\n--------content end");
+//       }
+//       _triggerBackup = true;
+//     } else if (kDebugMode) {
+//       print("No changes in note.");
+//     }
+//   }
 
   void bottomSheetOptionTappedHandler(moreOptions tappedOption) {
     if (kDebugMode) {
@@ -457,8 +449,9 @@ class _NotePageState extends State<NotePage> implements NoteListener {
     if (kDebugMode) {
       print("note color changed");
     }
-    noteColor = newColorSelected;
-    updateNoteObject();
+    _editableNote.noteColour = newColorSelected;
+    // noteColor = newColorSelected;
+    // updateNoteObject();
   }
 
   Future<bool> _readyToPop() async {

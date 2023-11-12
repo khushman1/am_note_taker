@@ -53,13 +53,14 @@ class CentralStation {
       print("Generating ${currentNote.id} ${currentNote.title} tile");
     }
 
+    NoteTile returnTile;
     if (notesViewType == viewType.staggered) {
-      return MyStaggeredTile(
+      returnTile = MyStaggeredTile(
         note: currentNote,
         tapCallback: tapCallback,
       );
     } else {
-      return ListExpansionTile(
+      returnTile = ListExpansionTile(
         note: currentNote,
         tapCallback: tapCallback,
         instanceCallback: instanceCallback,
@@ -68,6 +69,8 @@ class CentralStation {
         initiallyExpanded: initiallyExpanded,
       );
     }
+
+    return ProviderNoteTile(note: currentNote, child: returnTile);
   }
 
   static void showWarningDialog({

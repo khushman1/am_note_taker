@@ -24,12 +24,12 @@ class TextFieldMetadataController extends TextEditingController {
   );
   final Function(ParentReference) _onHeaderTapFunction;
   final NoteModel _noteBeingEdited;
-  late Set<ParentReference> _temporaryChildrenSet;
+  late Set<ParentReference> _childrenNotPresentSet;
   
   TextFieldMetadataController(
       this._noteBeingEdited,
       this._onHeaderTapFunction) {
-    _temporaryChildrenSet = Set<ParentReference>.from(_noteBeingEdited.children);
+    _childrenNotPresentSet = Set<ParentReference>.from(_noteBeingEdited.children);
   }
 
   @override
@@ -47,8 +47,8 @@ class TextFieldMetadataController extends TextEditingController {
       onMatch: (Match match) {
         ParentReference child = ParentReference.fromMatch(noteMap, match,
             _noteBeingEdited);
-        _noteBeingEdited.addChild(newChildRef: child, isBuilding: true);
-        _temporaryChildrenSet.remove(child);
+        _noteBeingEdited.addChild(newChildRef: child);
+        _childrenNotPresentSet.remove(child);
         childrenSpans.add(
           TextSpan(
               children: [
@@ -98,10 +98,11 @@ class TextFieldMetadataController extends TextEditingController {
         return text;
       },
     );
-    for (ParentReference child in _temporaryChildrenSet) {
-      _noteBeingEdited.removeChild(child: child, isBuilding: true);
+    // Remove children that aren't present in the content anymore
+    for (ParentReference child in _childrenNotPresentSet) {
+      _noteBeingEdited.removeChild(child: child);
     }
-    _temporaryChildrenSet = Set<ParentReference>.from(_noteBeingEdited.children);
+    _childrenNotPresentSet = Set<ParentReference>.from(_noteBeingEdited.children);
     return TextSpan(style: style, children: childrenSpans);
   }
 

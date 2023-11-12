@@ -67,6 +67,19 @@ class _ExpandableListPageState extends State<ExpandableListPage> {
         );
       }).toList();
 
+      // var x = ListView.builder(
+      //   itemCount: conceptsChildren.length,
+      //   itemBuilder: (context, idx) => CentralStation.generateTile(
+      //         currentNote: noteSetModel.conceptsNotesList.reversed.elementAt(idx),
+      //         notesViewType: widget.notesViewType,
+      //         tapCallback: widget.tapCallback,
+      //         instanceCallback: (ctx, ref) =>
+      //             widget.tapCallback!(ctx, ref.child),
+      //         childCallback: (ctx, ref) => widget.tapCallback!(ctx, ref.parent),
+      //         showChildren: true
+      //     )
+      // );
+
       return ListView(
         padding: const EdgeInsets.all(8),
         children: <Widget>[

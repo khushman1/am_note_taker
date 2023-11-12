@@ -52,27 +52,19 @@ class NoteModel extends ChangeNotifier {
   final Set<ParentReference> _children = {};
   Set<ParentReference> get children => _children;
   void addChild({
-    required ParentReference newChildRef,
-    bool isBuilding = false
+    required ParentReference newChildRef
   }) {
-    bool notify = true;
     if (_children.contains(newChildRef)) {
       // Removing and readding it resets the other elements in the reference
       _children.remove(newChildRef);
-      notify = false; // This makes it not notify
     }
     _children.add(newChildRef);
-    if (notify && !isBuilding) {
-      notifyListeners();
-    }
   }
   void removeChild({
-    required ParentReference child,
-    bool isBuilding = false
+    required ParentReference child
   }) {
-    if (_children.remove(child) && !isBuilding) {
+    if (_children.remove(child)) {
       child.destroy();
-      notifyListeners();
     }
   }
 

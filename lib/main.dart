@@ -1,11 +1,10 @@
 import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'Models/NoteModel.dart';
 import 'ViewControllers/HomePage.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
+  runApp(ChangeNotifierProvider<NoteSetModel>(
     create: (context) => NoteSetModel(),
     child: const MyApp(),
   ));
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
         fontFamily: "Roboto",
         iconTheme: const IconThemeData(color: Colors.black),
         primaryTextTheme: const TextTheme(
-          headline6: TextStyle(color: Colors.black),
+          titleLarge: TextStyle(color: Colors.black),
         ),
         primarySwatch: Colors.blue,
       ),

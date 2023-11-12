@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:am_note_taker/Views/NoteTile.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:provider/provider.dart';
 import '../Models/NoteModel.dart';
 import '../Models/Utility.dart';
 import 'NoteContentTextField/ParentReference.dart';
@@ -37,41 +38,29 @@ class ListExpansionTile extends StatefulWidget implements NoteTile {
   _ListExpansionTileState createState() => _ListExpansionTileState();
 }
 
-class _ListExpansionTileState extends State<ListExpansionTile>
-    implements NoteListener {
+class _ListExpansionTileState extends State<ListExpansionTile> {
   late double _fontSize;
 
   bool expanded = false;
 
   @override
-  void noteListener() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     _fontSize = TextUtils.determineFontSizeForNoteModel(widget.note);
-    widget.note.removeListener(noteListener);
-    widget.note.addListener(noteListener);
 
-    return Card(
-      child: constructChild(
-        context: context,
-        note: widget.note,
-        initiallyExpanded: widget.initiallyExpanded,
-        showChildrenNInstances: widget.showChildren
-      ),
-      color: widget.note.noteColour,
-      shadowColor: widget.note.noteColour,
+    return Consumer<NoteModel>(
+      builder: (_, noteModel, __) {
+        return Card(
+            child: constructChild(
+                context: context,
+                note: noteModel,
+                initiallyExpanded: widget.initiallyExpanded,
+                showChildrenNInstances: widget.showChildren
+            ),
+            color: noteModel.noteColour,
+            shadowColor: noteModel.noteColour,
+          );
+      },
     );
-  }
-
-  @override
-  void dispose() {
-    widget.note.removeListener(noteListener);
-    super.dispose();
   }
 
   void _noteOpened(BuildContext ctx) {
@@ -163,7 +152,7 @@ class _ListExpansionTileState extends State<ListExpansionTile>
     if (note.children.isNotEmpty) {
       List<Widget> childTiles = note.children.map(
               (e) => _childTile(e)).toList();
-      children.add(const Text("Children"));
+      children.add(const Text("Concepts"));
       children.add(ListView(children: childTiles, shrinkWrap: true));
     }
     return Padding(

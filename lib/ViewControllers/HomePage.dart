@@ -1,3 +1,4 @@
+import 'package:am_note_taker/Models/NoteModel.dart';
 import 'package:am_note_taker/Models/NoteSetModel.dart';
 import 'package:am_note_taker/ViewControllers/ExpandableListPage.dart';
 import 'package:flutter/foundation.dart';
@@ -57,14 +58,14 @@ class _HomePageState extends State<HomePage> {
       return StaggeredGridPage(
         notesViewType: notesViewType,
         tapCallback: (context, note) => Navigator.push(
-            context, MaterialPageRoute(builder: (ctx) => NotePage(note))
+            context, _getNotePageRoute(note)
         ),
       );
     }
     return ExpandableListPage(
         notesViewType: notesViewType,
         tapCallback: (context, note) => Navigator.push(
-            context, MaterialPageRoute(builder: (ctx) => NotePage(note))
+            context, _getNotePageRoute(note)
         ),
     );
   }
@@ -84,11 +85,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  MaterialPageRoute _getNotePageRoute(NoteModel note) {
+    return MaterialPageRoute(builder: (ctx) {
+      return ChangeNotifierProvider(create: (_) => note, child: NotePage(note));
+    });
+  }
+
   void _newNoteTapped(BuildContext ctx) {
     var emptyNote =
         Provider.of<NoteSetModel>(ctx, listen: false).addEmptyNoteModel();
-    Navigator.push(
-        ctx, MaterialPageRoute(builder: (ctx) => NotePage(emptyNote)));
+    Navigator.push(ctx, _getNotePageRoute(emptyNote));
   }
 
   void _toggleViewType() {
